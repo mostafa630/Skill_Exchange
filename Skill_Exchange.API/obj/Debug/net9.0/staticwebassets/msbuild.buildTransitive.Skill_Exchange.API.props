@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="../buildMultiTargeting/Skill_Exchange.API.props" />
-</Project>

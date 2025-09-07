@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="../build/Skill_Exchange.API.props" />
-</Project>
