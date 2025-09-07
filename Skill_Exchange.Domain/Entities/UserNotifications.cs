@@ -7,6 +7,7 @@ namespace Skill_Exchange.Domain.Entities
 {
     public class UserNotifications
     {
-        
+        public Guid Id { get; set; }
+
     }
 }

@@ -9,5 +9,6 @@ namespace Skill_Exchange.Domain.Entities
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
+        public string Description { get; set; }
     }
 }
