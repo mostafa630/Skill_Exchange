@@ -5,13 +5,13 @@ using System.Threading.Tasks;
 
 namespace Skill_Exchange.Domain.Entities
 {
-    public class UserNotifications
+    public class UserFriend
     {
-        // Navigation properties
         public Guid UserId { get; set; }
-        public Guid NotificationId { get; set; }
+        public Guid FreindId { get; set; }
 
+        // Navigation properties
         public AppUser User { get; set; }
-        public Notification Notification { get; set; }
+        public AppUser Friend { get; set; }
     }
 }

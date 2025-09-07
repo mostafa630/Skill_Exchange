@@ -13,5 +13,11 @@ namespace Skill_Exchange.Domain.Entities
         public RequestStatus Status { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime RespondedAt { get; set; }
+
+        //Navigation properties
+        public Guid SenderId { get; set; }
+        public Guid RecieverId { get; set; }
+        public AppUser Sender { get; set; }
+        public AppUser Reciever { get; set; }
     }
 }

@@ -11,5 +11,11 @@ namespace Skill_Exchange.Domain.Entities
         public string Name { get; set; }
         public bool IsPredefined { get; set; }
         public string CreatedBy { get; set; }
+
+        //Navigation properties
+        public Guid SkillCategoryId { get; set; }
+        public SkillCategory SkillCategory { get; set; }
+
+        public ICollection<AppUser> Users { get; set; }
     }
 }

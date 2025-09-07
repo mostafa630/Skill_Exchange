@@ -12,5 +12,8 @@ namespace Skill_Exchange.Domain.Entities
         public string Message { get; set; }
         public DateTime CreatedAt { get; set; }
         public Guid RefrenceId { get; set; }
+
+        // Navigation properties
+        public ICollection<AppUser> Users { get; set; }
     }
 }
