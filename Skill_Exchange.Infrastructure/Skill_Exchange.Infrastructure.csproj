@@ -23,4 +23,8 @@
     <PackageReference Include="MongoDB.Driver.Core" Version="2.30.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Skill_Exchange.Domain\Skill_Exchange.Domain.csproj" />
+  </ItemGroup>
+
 </Project>

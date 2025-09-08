@@ -14,8 +14,7 @@ namespace Skill_Exchange.Domain.Entities
 
         //Navigation properties
         public Guid SkillCategoryId { get; set; }
-        public SkillCategory SkillCategory { get; set; }
-
+        public SkillCategory SkillCategory { get; set; }             
         public ICollection<AppUser> Users { get; set; }
     }
 }

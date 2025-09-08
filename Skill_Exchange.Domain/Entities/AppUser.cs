@@ -13,9 +13,9 @@ namespace Skill_Exchange.Domain.Entities
         public string LastName { get; set; }
         public string PhoneNumber { get; set; }
         public DateOnly DateOfBirth { get; set; }
-        public string Bio { get; set; }
+        public string? Bio { get; set; }
         public DateTime LastActiveAt { get; set; }
-        public string ProfileImageUrl { get; set; }
+        public string? ProfileImageUrl { get; set; }
 
         // Navigation properties
         public ICollection<RatingAndFeedback> Rates { get; set; }

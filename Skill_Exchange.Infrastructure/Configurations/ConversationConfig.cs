@@ -1,0 +1,20 @@
+
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Skill_Exchange.Domain.Entities;
+namespace Skill_Exchange.Infrastructure.Configurations;
+
+public class ConversationConfig : IEntityTypeConfiguration<Conversation>
+{
+    public void Configure(EntityTypeBuilder<Conversation> builder)
+    {
+        builder.HasKey(c => c.Id);
+        builder.Property(c => c.Id).ValueGeneratedOnAdd();
+
+        builder.Property(c => c.IsActive).IsRequired();
+
+
+
+
+    }
+}
