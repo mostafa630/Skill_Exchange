@@ -16,7 +16,6 @@ namespace Skill_Exchange.Domain.Entities
         public Guid SkillId { get; set; }
 
         public AppUser User { get; set; }
-
         public Skill Skill { get; set; }
     }
 }

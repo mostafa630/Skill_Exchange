@@ -18,5 +18,7 @@ public class UserSkillsConfig : IEntityTypeConfiguration<UserSkills>
 
         builder.Property(us => us.Purpose)
                .IsRequired();
+        
+
     }
 }

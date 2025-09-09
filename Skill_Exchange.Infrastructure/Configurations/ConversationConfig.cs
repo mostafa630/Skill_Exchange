@@ -13,8 +13,8 @@ public class ConversationConfig : IEntityTypeConfiguration<Conversation>
 
         builder.Property(c => c.IsActive).IsRequired();
 
-
-
+        // Ignore Messages (because they're in MongoDB)
+        builder.Ignore(c => c.Messages);
 
     }
 }

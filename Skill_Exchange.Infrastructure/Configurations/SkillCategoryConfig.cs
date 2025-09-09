@@ -14,8 +14,14 @@ public class SkillCategoryConfig : IEntityTypeConfiguration<SkillCategory>
         builder.Property(sc => sc.Name)
                .IsRequired()
                .HasMaxLength(100);
-               
+
         builder.Property(sc => sc.Description)
                .HasMaxLength(1000);
+
+        //relationship
+        builder.HasMany(sc => sc.Skills)
+               .WithOne(s => s.SkillCategory)
+               .HasForeignKey(s => s.SkillCategoryId);
+
     }
 }
