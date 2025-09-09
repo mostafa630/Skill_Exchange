@@ -19,5 +19,8 @@ public class RatingAndFeedbackConfig : IEntityTypeConfiguration<RatingAndFeedbac
         builder.Property(rf => rf.Feedback)
         .HasMaxLength(2000);
 
+        // Indexing
+        builder.HasIndex(n => n.CreatedAt); // for sorting notifications by time
+
     }
 }

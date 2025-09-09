@@ -15,8 +15,8 @@ namespace Skill_Exchange.Domain.Entities
         public string Feedback { get; set; }
 
         //Navigation properties
-        public Guid FromUserId { get; set; }
-        public Guid ToUserId { get; set; }
+        public Guid? FromUserId { get; set; }
+        public Guid? ToUserId { get; set; }
 
         public AppUser FromUser { get; set; }
         public AppUser ToUser { get; set; }

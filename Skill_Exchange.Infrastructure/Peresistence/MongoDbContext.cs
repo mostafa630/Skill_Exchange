@@ -1,22 +1,17 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using Skill_Exchange.Domain.Entities;
+using Skill_Exchange.Infrastructure.Configurations;
 
-namespace Skill_Exchange.Infrastructure.Peresistence
+public class MongoDbContext
 {
-    public class MongoDbContext
-    {
-        private readonly IMongoDatabase _database;
+    private readonly IMongoDatabase _database;
 
-        public IMongoCollection<Message> Messages => _database.GetCollection<Message>("Users");
-        
-        public MongoDbContext(string connectionString, string databaseName)
-        {
-            var client = new MongoClient(connectionString);
-            _database = client.GetDatabase(databaseName);
-        }
+    public MongoDbContext(IOptions<MongoDbSettings> settings)
+    {
+        var client = new MongoClient(settings.Value.ConnectionString);
+        _database = client.GetDatabase(settings.Value.DatabaseName);
     }
+
+    public IMongoCollection<Message> Messages => _database.GetCollection<Message>("messages");
 }

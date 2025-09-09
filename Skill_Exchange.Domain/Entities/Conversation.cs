@@ -11,8 +11,8 @@ namespace Skill_Exchange.Domain.Entities
         public bool IsActive { get; set; }
 
         // Navigation properties
-        public Guid ParticipantAId { get; set; }
-        public Guid ParticipantBId { get; set; }
+        public Guid? ParticipantAId { get; set; }
+        public Guid? ParticipantBId { get; set; }
 
         public AppUser ParticipantA { get; set; }
         public AppUser ParticipantB { get; set; }

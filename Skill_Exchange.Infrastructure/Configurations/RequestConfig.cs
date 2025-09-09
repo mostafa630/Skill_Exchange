@@ -14,7 +14,13 @@ public class RequestConfig : IEntityTypeConfiguration<Request>
         builder.Property(r => r.Status).IsRequired();
         builder.Property(r => r.CreatedAt).IsRequired();
         builder.Property(r => r.RespondedAt).IsRequired(false);
-        
+
+        // Indexing
+        builder.HasIndex(r => r.SenderId);     // who sent the request
+        builder.HasIndex(r => r.RecieverId);   // who received the request
+        builder.HasIndex(r => r.Status);       // useful for filtering (Pending / Accepted / Rejected)
+        builder.HasIndex(r => new { r.SenderId, r.RecieverId })
+            .IsUnique(false); // allow multiple requests but makes lookups faster
     }
 }
 

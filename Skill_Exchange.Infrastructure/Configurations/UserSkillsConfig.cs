@@ -18,7 +18,12 @@ public class UserSkillsConfig : IEntityTypeConfiguration<UserSkills>
 
         builder.Property(us => us.Purpose)
                .IsRequired();
-        
+
+        // Indexing
+        builder.HasIndex(us => new { us.UserId, us.SkillId }).IsUnique(); // useful for searching all users of a specific skill
+        builder.HasIndex(us => us.SkillId); // fast lookup by skill
+        builder.HasIndex(us => us.UserId); // fast lookup by user
+
 
     }
 }

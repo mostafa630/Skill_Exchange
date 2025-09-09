@@ -1,4 +1,4 @@
-
+﻿
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Skill_Exchange.Domain.Entities;
@@ -40,46 +40,98 @@ public class AppUserConfig : IEntityTypeConfiguration<AppUser>
         .HasMaxLength(512);
 
         //relationships
-        // One-to-Many relationship between AppUser and RatingAndFeedback
+        // One-to-Many relationship between AppUser and RatingAndFeedback (rating and feedback are not removed if user is removed)
         builder.HasMany(user => user.RatingsGiven)
        .WithOne(rate => rate.FromUser)
-       .HasForeignKey(rate => rate.FromUserId);
+       .HasForeignKey(rate => rate.FromUserId)
+       .OnDelete(DeleteBehavior.NoAction);
 
         builder.HasMany(user => user.RatingsReceived)
        .WithOne(rate => rate.ToUser)
-       .HasForeignKey(rate => rate.ToUserId);
+       .HasForeignKey(rate => rate.ToUserId)
+       .OnDelete(DeleteBehavior.NoAction);
 
-        // One-to-Many relationship between AppUser and Request
+
+        // One-to-Many relationship between AppUser and Request (request is removed if user is removed)
         builder.HasMany(u => u.RequestsSent)
        .WithOne(r => r.Sender)
-       .HasForeignKey(r => r.SenderId);
+       .HasForeignKey(r => r.SenderId)
+       .OnDelete(DeleteBehavior.NoAction);
 
         builder.HasMany(u => u.RequestsReceived)
        .WithOne(r => r.Reciever)
-       .HasForeignKey(r => r.RecieverId);
+       .HasForeignKey(r => r.RecieverId)
+       .OnDelete(DeleteBehavior.Cascade);
 
-        // Many-to-Many relationship between AppUser and Conversation
+        // Many-to-Many relationship between AppUser and Conversation (conversation is not removed if user is removed ,but conversation is relevant to no user)
         builder.HasMany(u => u.ConversationsAsA)
        .WithOne(c => c.ParticipantA)
-       .HasForeignKey(c => c.ParticipantAId);
+       .HasForeignKey(c => c.ParticipantAId)
+       .OnDelete(DeleteBehavior.NoAction);
 
         builder.HasMany(u => u.ConversationsAsB)
        .WithOne(c => c.ParticipantB)
-       .HasForeignKey(c => c.ParticipantBId);
+       .HasForeignKey(c => c.ParticipantBId)
+       .OnDelete(DeleteBehavior.NoAction);
 
-        //many-to-many relationship between AppUser and Skill through UserSkill
+        // Many-to-many between AppUser and Skill through UserSkill (if we removed user , so all UserSkills should be removed)
         builder.HasMany(u => u.Skills)
-       .WithMany(s => s.Users)
-       .UsingEntity<UserSkills>();
+            .WithMany(s => s.Users)
+            .UsingEntity<UserSkills>(
+                j => j
+                    .HasOne(us => us.Skill)
+                    .WithMany()
+                    .HasForeignKey(us => us.SkillId)
+                    .OnDelete(DeleteBehavior.Cascade),   // Delete relation if Skill is deleted
+                j => j
+                    .HasOne(us => us.User)
+                    .WithMany()
+                    .HasForeignKey(us => us.UserId)
+                    .OnDelete(DeleteBehavior.Cascade),   // Delete relation if User is deleted
+                j =>
+                {
+                    j.ToTable("UserSkills");
+                });
 
-        // Many-to-Many relationship between AppUser and Notification
+        // Many-to-many between AppUser and Notification (if we removed user , so all UserNotifications should be removed)
         builder.HasMany(u => u.Notifications)
-       .WithMany(n => n.Users)
-       .UsingEntity(join => join.ToTable("UserNotifications"));
+            .WithMany(n => n.Users)
+            .UsingEntity<Dictionary<string, object>>(
+                "UserNotifications",
+                j => j
+                    .HasOne<Notification>()
+                    .WithMany()
+                    .HasForeignKey("NotificationId")
+                    .OnDelete(DeleteBehavior.Cascade),   // If Notification is deleted
+                j => j
+                    .HasOne<AppUser>()
+                    .WithMany()
+                    .HasForeignKey("UserId")
+                    .OnDelete(DeleteBehavior.Cascade));  // If User is deleted
 
-        // Many-to-Many relationship between AppUser and AppUser through UserFriend
+        // Many-to-many self-relationship (AppUser ↔ AppUser) through UserFriends (if we removed user , so all UsersFriends should be removed)
         builder.HasMany(u => u.Friends)
-         .WithMany(u => u.FriendOf)
-         .UsingEntity(join => join.ToTable("UserFriends"));
+            .WithMany(u => u.FriendOf)
+            .UsingEntity<Dictionary<string, object>>(
+                "UserFriends",
+                j => j
+                    .HasOne<AppUser>()
+                    .WithMany()
+                    .HasForeignKey("FriendId")
+                    .OnDelete(DeleteBehavior.NoAction),   // If Friend is deleted
+                j => j
+                    .HasOne<AppUser>()
+                    .WithMany()
+                    .HasForeignKey("UserId")
+                    .OnDelete(DeleteBehavior.Cascade));  // If User is deleted
+
+
+        // Indexing
+        builder.HasIndex(u => u.Email).IsUnique(); // for login / identity
+        builder.HasIndex(u => u.PhoneNumber).IsUnique(); // prevent duplicate phone numbers
+        builder.HasIndex(u => u.LastActiveAt); // for sorting/filtering by recent activity
+        builder.HasIndex(u => new { u.FirstName, u.LastName }); // optimize full name search
+
+
     }
 }

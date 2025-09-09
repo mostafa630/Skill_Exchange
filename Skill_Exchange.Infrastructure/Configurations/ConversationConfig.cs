@@ -16,5 +16,17 @@ public class ConversationConfig : IEntityTypeConfiguration<Conversation>
         // Ignore Messages (because they're in MongoDB)
         builder.Ignore(c => c.Messages);
 
+
+        // Indexing
+
+        // Prevents duplicate conversations between the same two users
+        builder.HasIndex(c => new { c.ParticipantAId, c.ParticipantBId }).IsUnique();
+        // Faster lookups for conversations where the user is ParticipantA
+        builder.HasIndex(c => c.ParticipantAId);
+        // Faster lookups for conversations where the user is ParticipantB
+        builder.HasIndex(c => c.ParticipantBId);
+
+
+
     }
 }

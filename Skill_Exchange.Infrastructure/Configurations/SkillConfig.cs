@@ -21,5 +21,9 @@ public class SkillConfig : IEntityTypeConfiguration<Skill>
         builder.Property(s => s.CreatedBy)
         .HasMaxLength(100);
 
+        // Indexing
+        builder.HasIndex(s => s.Name).IsUnique(); // useful for searching skills by name
+        builder.HasIndex(s => s.SkillCategoryId); // useful for searching skills by category
+
     }
 }

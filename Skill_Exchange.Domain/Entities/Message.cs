@@ -7,6 +7,7 @@ namespace Skill_Exchange.Domain.Entities
     public class Message
     {
         [BsonId]
+        [BsonRepresentation(BsonType.String)]
         public Guid Id { get; set; }
 
         public string Content { get; set; }
@@ -15,8 +16,11 @@ namespace Skill_Exchange.Domain.Entities
         public DateTime? ReadAt { get; set; }
 
         // Foreign keys (stored in Mongo)
+        [BsonRepresentation(BsonType.String)]
         public Guid SenderId { get; set; }
+        [BsonRepresentation(BsonType.String)]
         public Guid ReceiverId { get; set; }
+        [BsonRepresentation(BsonType.String)]
         public Guid ConversationId { get; set; }
 
         // Navigation (not stored in Mongo)

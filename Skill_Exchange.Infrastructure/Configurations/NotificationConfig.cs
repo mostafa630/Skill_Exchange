@@ -16,6 +16,9 @@ public class NotificationConfig : IEntityTypeConfiguration<Notification>
         builder.Property(n => n.CreatedAt).IsRequired();
         builder.Property(n => n.RefrenceId).IsRequired();
 
+        // Indexing
+        builder.HasIndex(n => n.CreatedAt); // for sorting notifications by time
+        builder.HasIndex(n => n.Title); // useful if filtering by type(info, alert, etc.)
 
     }
 }

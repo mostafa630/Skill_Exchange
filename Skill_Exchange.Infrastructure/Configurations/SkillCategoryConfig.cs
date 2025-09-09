@@ -21,7 +21,11 @@ public class SkillCategoryConfig : IEntityTypeConfiguration<SkillCategory>
         //relationship
         builder.HasMany(sc => sc.Skills)
                .WithOne(s => s.SkillCategory)
-               .HasForeignKey(s => s.SkillCategoryId);
+               .HasForeignKey(s => s.SkillCategoryId)
+               .OnDelete(DeleteBehavior.Cascade);
+
+        // Indexing
+        builder.HasIndex(sc => sc.Name).IsUnique(); // useful for searching category by name
 
     }
 }
