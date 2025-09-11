@@ -22,7 +22,7 @@ namespace Skill_Exchange.Infrastructure
                 await _dbSet.AddAsync(entity);
                 return true;
             }
-            catch(Exception)
+            catch (Exception)
             {
                 return false;
             }
@@ -34,7 +34,7 @@ namespace Skill_Exchange.Infrastructure
                 _dbSet.Remove(entity);
                 return Task.FromResult(true);
             }
-            catch(Exception)
+            catch (Exception)
             {
                 return Task.FromResult(false);
             }
@@ -57,7 +57,7 @@ namespace Skill_Exchange.Infrastructure
                 _dbSet.Update(entity);
                 return Task.FromResult(true);
             }
-            catch(Exception)
+            catch (Exception)
             {
                 return Task.FromResult(false);
             }

@@ -2,7 +2,7 @@
 
 namespace Skill_Exchange.Domain.Interfaces
 {
-    public interface IUnitOfWork:IDisposable
+    public interface IUnitOfWork : IDisposable
     {
         IGenericRepository<AppUser> Users { get; }
         IGenericRepository<Skill> Skills { get; }
