@@ -6,6 +6,9 @@ using MongoDB.Bson.Serialization.Serializers;
 using Skill_Exchange.Infrastructure.Configurations;
 using Skill_Exchange.Infrastructure.Peresistence;
 using Microsoft.Extensions.DependencyInjection;
+using Skill_Exchange.Application.Services.User.Queries.Handlers;
+using Skill_Exchange.Domain.Interfaces;
+using Skill_Exchange.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,9 +32,11 @@ builder.Services.AddSingleton<MongoDbContext>(sp =>
     return new MongoDbContext(settings);
 });
 
+// Inject UnitOfWork
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-
-
+builder.Services.AddMediatR(cfg =>
+    cfg.RegisterServicesFromAssembly(typeof(GetAllUsersHandler).Assembly));
 var app = builder.Build();
 
 // Seed the MongoDB database

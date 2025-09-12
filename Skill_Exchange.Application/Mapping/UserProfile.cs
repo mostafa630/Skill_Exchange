@@ -9,11 +9,11 @@ using Skill_Exchange.Domain.Entities;
 
 namespace Skill_Exchange.Application.Mapping
 {
-    public class UserResponseProfile : Profile
+    public class UserProfile : Profile
     {
-        public UserResponseProfile()
+        public UserProfile()
         {
-            CreateMap<AppUser, UserDTO>().ReverseMap();
+            CreateMap<AppUser, UserDTO>();
         }
     }
 }
