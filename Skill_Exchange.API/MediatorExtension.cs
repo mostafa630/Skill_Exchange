@@ -10,9 +10,20 @@ namespace Skill_Exchange.API
     {
         public static IServiceCollection AddMediatorHandlers(this IServiceCollection services)
         {
+            services.AddUserHandlers().AddSkillHandlers();
+            return services;
+        }
+        public static IServiceCollection AddUserHandlers(this IServiceCollection services)
+        {
             services.AddTransient<IRequestHandler<GetAll<AppUser, UserDTO>, IEnumerable<UserDTO>>, GetAllHandler<AppUser, UserDTO>>();
+            services.AddTransient<IRequestHandler<GetById<AppUser, UserDTO>, UserDTO>, GetByIdHandler<AppUser, UserDTO>>();
 
             return services;
         }
+        public static IServiceCollection AddSkillHandlers(this IServiceCollection services)
+        {
+            return services;
+        }
+        
     }
 }

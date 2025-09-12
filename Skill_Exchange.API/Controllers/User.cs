@@ -24,10 +24,18 @@ namespace Skill_Exchange.API.Controllers
             this.mediator = mediator;
         }
 
-        [HttpGet("")]
+        /*[HttpGet("")]
         public async Task<IActionResult> GetAll()
         {
-            var query = new GetAll<AppUser,UserDTO>();
+            var query = new GetAll<AppUser, UserDTO>();
+            var users = await mediator.Send(query);
+            return Ok(users);
+        }*/
+
+        [HttpGet("{id:guid}")]
+        public async Task<IActionResult> GetById(Guid id)
+        {
+            var query = new GetById<AppUser, UserDTO>(id);
             var users = await mediator.Send(query);
             return Ok(users);
         }

@@ -12,5 +12,7 @@
         Task<T> GetByIdAsync(Guid id);
         // Get all entities
         Task<IEnumerable<T>> GetAllAsync();
+
+
     }
 }

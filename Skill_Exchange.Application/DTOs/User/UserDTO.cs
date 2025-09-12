@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Skill_Exchange.Application.DTOs
+namespace Skill_Exchange.Application.DTOs.User
 {
     public class UserDTO
     {
