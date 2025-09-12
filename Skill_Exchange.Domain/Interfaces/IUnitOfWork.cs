@@ -13,8 +13,6 @@ namespace Skill_Exchange.Domain.Interfaces
         IGenericRepository<Conversation> Conversations { get; }
         IGenericRepository<Notification> Notifications { get; }
         Task<int> CompleteAsync();
-
-
-
+        IGenericRepository<T> GetRepository<T>() where T : class;
     }
 }

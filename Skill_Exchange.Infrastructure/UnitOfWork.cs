@@ -15,6 +15,7 @@ namespace Skill_Exchange.Infrastructure
         public IGenericRepository<Request> Requests { get; private set; }
         public IGenericRepository<Conversation> Conversations { get; private set; }
         public IGenericRepository<Notification> Notifications { get; private set; }
+
         public UnitOfWork(AppDbContext context)
         {
             _context = context;
@@ -34,6 +35,11 @@ namespace Skill_Exchange.Infrastructure
         public void Dispose()
         {
             _context.Dispose();
+        }
+
+        public IGenericRepository<T> GetRepository<T>() where T : class
+        {
+            return new GenericRepository<T>(_context);
         }
     }
 }
