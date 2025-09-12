@@ -34,7 +34,8 @@ builder.Services.AddSingleton<MongoDbContext>(sp =>
 
 // Inject UnitOfWork
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+builder.Services.AddAutoMapper(typeof(Skill_Exchange.Application.Mapping.UserProfile).Assembly);
+
 builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(typeof(GetAllUsersHandler).Assembly));
 var app = builder.Build();

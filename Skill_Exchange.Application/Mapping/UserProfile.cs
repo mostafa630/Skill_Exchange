@@ -10,10 +10,13 @@ using Skill_Exchange.Domain.Entities;
 namespace Skill_Exchange.Application.Mapping
 {
     public class UserProfile : Profile
+{
+    public UserProfile()
     {
-        public UserProfile()
-        {
-            CreateMap<AppUser, UserDTO>();
-        }
+        CreateMap<AppUser, UserDTO>()
+            .ForMember(dest => dest.LastActiveAt, 
+                       opt => opt.MapFrom(src => DateOnly.FromDateTime(src.LastActiveAt)));
     }
+}
+
 }
