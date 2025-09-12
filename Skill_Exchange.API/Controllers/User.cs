@@ -6,7 +6,10 @@ using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Skill_Exchange.Application.DTOs;
+using Skill_Exchange.Application.Services.GlobalQuery;
 using Skill_Exchange.Application.Services.User.Queries;
+using Skill_Exchange.Domain.Entities;
 
 namespace Skill_Exchange.API.Controllers
 {
@@ -24,7 +27,7 @@ namespace Skill_Exchange.API.Controllers
         [HttpGet("")]
         public async Task<IActionResult> GetAll()
         {
-            var query = new GetAllUsers();
+            var query = new GetAll<AppUser,UserDTO>();
             var users = await mediator.Send(query);
             return Ok(users);
         }

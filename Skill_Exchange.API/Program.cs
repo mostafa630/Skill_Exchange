@@ -1,46 +1,57 @@
+﻿using MediatR;
+using MediatR.Pipeline;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
-using MongoDB.Bson.Serialization.Serializers;
-using Skill_Exchange.Infrastructure.Configurations;
-using Skill_Exchange.Infrastructure.Peresistence;
-using Microsoft.Extensions.DependencyInjection;
-using Skill_Exchange.Application.Services.User.Queries.Handlers;
+using Skill_Exchange.API;
+using Skill_Exchange.Application.DTOs;
+using Skill_Exchange.Application.Services.GlobalQuery;
+using Skill_Exchange.Application.Services.GlobalQuery.Handlers;
+using Skill_Exchange.Domain.Entities;
 using Skill_Exchange.Domain.Interfaces;
 using Skill_Exchange.Infrastructure;
+using Skill_Exchange.Infrastructure.Configurations;
+using Skill_Exchange.Infrastructure.Peresistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
+// Add services to the container
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
-builder.Services.AddDbContext<AppDbContext>(Options =>
+// ---------------------- EF Core ----------------------
+builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    Options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
-// Register the MongoDbSettings class
-builder.Services.Configure<MongoDbSettings>(builder.Configuration.GetSection("MongoDbSettings"));
 
-// Register the MongoDbContext as a singleton
+// ---------------------- MongoDB ----------------------
+builder.Services.Configure<MongoDbSettings>(
+    builder.Configuration.GetSection("MongoDbSettings")
+);
+
 builder.Services.AddSingleton<MongoDbContext>(sp =>
 {
     var settings = sp.GetRequiredService<IOptions<MongoDbSettings>>();
     return new MongoDbContext(settings);
 });
 
-// Inject UnitOfWork
+// ---------------------- UnitOfWork ----------------------
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+// ---------------------- AutoMapper ----------------------
 builder.Services.AddAutoMapper(typeof(Skill_Exchange.Application.Mapping.UserProfile).Assembly);
 
+// ---------------------- MediatR ----------------------
 builder.Services.AddMediatR(cfg =>
-    cfg.RegisterServicesFromAssembly(typeof(GetAllUsersHandler).Assembly));
+{
+    cfg.RegisterServicesFromAssembly(typeof(GetAllHandler<,>).Assembly);
+});
+
+builder.Services.AddMediatorHandlers();
+// ---------------------- Build App ----------------------
 var app = builder.Build();
 
-// Seed the MongoDB database
+// ---------------------- Seed MongoDB ----------------------
 using (var scope = app.Services.CreateScope())
 {
     var mongoContext = scope.ServiceProvider.GetRequiredService<MongoDbContext>();
@@ -48,17 +59,14 @@ using (var scope = app.Services.CreateScope())
     seeder.SeedMessages();
 }
 
-
-// Configure the HTTP request pipeline.
+// ---------------------- Middleware ----------------------
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();
