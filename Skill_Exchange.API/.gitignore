@@ -1,12 +1,8 @@
-# Visual Studio
 .vs/
+**/bin/
+**/obj/
+
 *.user
 *.suo
-*.userosscache
-*.sln.docstates
-
-# Build results
-bin/
-obj/
-Debug/
-Release/
+*.cache
+*.log
