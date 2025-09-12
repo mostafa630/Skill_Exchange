@@ -1,14 +1,4 @@
-﻿using AutoMapper;
-using MediatR;
-using Skill_Exchange.Application.DTOs.DTOInterfaces;
-using Skill_Exchange.Domain.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Skill_Exchange.Application.Services.User.Commands.Handlers
+﻿namespace Skill_Exchange.Application.Services.User.Commands.Handlers
 {
 /*    public class AddHandler<T,TCreateDTO, TCreateResponseDTO> : IRequestHandler<Add<T,TCreateDTO, TCreateResponseDTO>, TCreateResponseDTO>
         where TCreateDTO : class, ICreate

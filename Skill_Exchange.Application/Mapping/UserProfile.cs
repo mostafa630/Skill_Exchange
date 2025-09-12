@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Amazon.Runtime.Internal.Util;
 using AutoMapper;
 using Skill_Exchange.Application.DTOs.User;
 using Skill_Exchange.Domain.Entities;
@@ -13,10 +8,12 @@ namespace Skill_Exchange.Application.Mapping
     {
         public UserProfile()
         {
-            CreateMap<AppUser, UserDTO>()
-                .ForMember(dest => dest.LastActiveAt,
-                           opt => opt.MapFrom(src => DateOnly.FromDateTime(src.LastActiveAt)));
+            CreateMap<AppUser, UserDTO>().ReverseMap();
+            CreateMap<CreateUserDTO, AppUser>().ReverseMap();
+            CreateMap<AppUser, CreateUserResponseDTO>()
+             .ForMember(dest => dest.userDTO, opt => opt.MapFrom(src => src)).ReverseMap();
 
+            //CreateMap<UpdateDTO, AppUser>().ReverseMap();
         }
     }
 }

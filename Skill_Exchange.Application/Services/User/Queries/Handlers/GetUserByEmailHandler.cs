@@ -19,11 +19,15 @@ namespace Skill_Exchange.Application.Services.User.Queries.Handlers
             _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
-        public Task<UserDTO> Handle(GetUserByEmail request, CancellationToken cancellationToken)
+        public async Task<UserDTO> Handle(GetUserByEmail request, CancellationToken cancellationToken)
         {
-            var user = _unitOfWork.Users.GetByEmailAsync(request.email);
+            var user = await _unitOfWork.Users.GetByEmailAsync(request.email);
+            if (user == null)
+            {
+                return null;
+            }
             var userDto = _mapper.Map<UserDTO>(user);
-            return Task.FromResult(userDto);
+            return userDto;
         }
     }
 }

@@ -14,9 +14,12 @@ using Skill_Exchange.Infrastructure.Peresistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container
+// ---------------------- Controllers ----------------------
 builder.Services.AddControllers();
-builder.Services.AddOpenApi();
+
+// ---------------------- Swagger ----------------------
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 // ---------------------- EF Core ----------------------
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -48,6 +51,7 @@ builder.Services.AddMediatR(cfg =>
 });
 
 builder.Services.AddMediatorHandlers();
+
 // ---------------------- Build App ----------------------
 var app = builder.Build();
 
@@ -60,9 +64,14 @@ using (var scope = app.Services.CreateScope())
 }
 
 // ---------------------- Middleware ----------------------
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment()|| app.Environment.IsProduction())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "Skill Exchange API V1");
+        options.RoutePrefix = string.Empty; // Swagger UI at root
+    });
 }
 
 app.UseHttpsRedirection();

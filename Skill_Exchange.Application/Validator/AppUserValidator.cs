@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Skill_Exchange.Application.Validator
 {
-    public class AppUserAddValidator : IValidator<AppUser>
+    /*public class AppUserAddValidator : IValidator<AppUser>
     {
         private readonly IUnitOfWork _unitOfWork;
 
@@ -24,6 +24,6 @@ namespace Skill_Exchange.Application.Validator
             var exists = await _unitOfWork.Users.GetByEmailAsync(DTO.Email);
             return exists == null;
         }
-    }
+    }*/
 
 }

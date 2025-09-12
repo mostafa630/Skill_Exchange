@@ -14,6 +14,6 @@ namespace Skill_Exchange.Application.DTOs.User
         public string PhoneNumber { get; set; }
         public string Bio { get; set; }
         public string? ProfileImageUrl { get; set; }
-        public DateOnly LastActiveAt { get; set; }
+        public DateTime LastActiveAt { get; set; }
     }
 }

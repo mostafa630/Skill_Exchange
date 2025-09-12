@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Skill_Exchange.Application.DTOs.DTOInterfaces
+namespace Skill_Exchange.Application.DTOs.Auth
 {
-    public interface ICreate
+    internal class GoogleLoginRequestDto
     {
-        public Guid Id { get; set; }
     }
 }

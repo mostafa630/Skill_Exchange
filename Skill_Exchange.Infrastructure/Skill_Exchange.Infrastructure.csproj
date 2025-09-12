@@ -27,4 +27,8 @@
     <ProjectReference Include="..\Skill_Exchange.Domain\Skill_Exchange.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Authentication\" />
+  </ItemGroup>
+
 </Project>

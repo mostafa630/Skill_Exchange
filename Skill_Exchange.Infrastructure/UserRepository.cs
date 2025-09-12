@@ -13,6 +13,7 @@ namespace Skill_Exchange.Infrastructure.Peresistence
         private readonly DbSet<AppUser> _dbSet;
         public UserRepository(AppDbContext context) : base(context)
         {
+            _dbSet = context.Set<AppUser>();
         }
         public Task<AppUser> GetByEmailAsync(string email)
         {

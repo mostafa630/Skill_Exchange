@@ -1,18 +1,10 @@
 ﻿using AutoMapper;
 using MediatR;
-using Skill_Exchange.Application.DTOs.DTOInterfaces;
-using Skill_Exchange.Application.Services.User.Commands;
 using Skill_Exchange.Domain.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace Skill_Exchange.Application.Services.GlobalCommands.Handlers
 {
     public class AddHandler<T, TCreateDTO, TCreateResponseDTO> : IRequestHandler<Add<T, TCreateDTO, TCreateResponseDTO>, TCreateResponseDTO>
-        where TCreateDTO : class, ICreate
+        where TCreateDTO : class
         where T : class
         where TCreateResponseDTO : class
     {
@@ -23,7 +15,7 @@ namespace Skill_Exchange.Application.Services.GlobalCommands.Handlers
             _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
-        public Task<TCreateResponseDTO> Handle(Add<T, TCreateDTO, TCreateResponseDTO> request, CancellationToken cancellationToken)
+        public async Task<TCreateResponseDTO> Handle(Add<T, TCreateDTO, TCreateResponseDTO> request, CancellationToken cancellationToken)
         {
             //var engtity = _mapper.Map<TCreateDTO>(request.CreateDTO);
             //var entity = _unitOfWork.GetRepository<T>().GetByIdAsync(request.CreateDTO.Id);
@@ -33,13 +25,13 @@ namespace Skill_Exchange.Application.Services.GlobalCommands.Handlers
             }*/
 
             var newEntity = _mapper.Map<T>(request.CreateDTO);
-            var addedEntity = _unitOfWork.GetRepository<T>().AddAsync(newEntity);
+            var IsAdded = await _unitOfWork.GetRepository<T>().AddAsync(newEntity);
 
-            if (addedEntity.Result)
+            if (IsAdded)
             {
-                _unitOfWork.CompleteAsync();
-                var ReponseDto = _mapper.Map<TCreateResponseDTO>(request.CreateDTO);
-                return Task.FromResult(ReponseDto);
+                await _unitOfWork.CompleteAsync();
+                var ReponseDto = _mapper.Map<TCreateResponseDTO>(newEntity);
+                return ReponseDto;
             }
             else
             {

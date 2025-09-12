@@ -7,6 +7,8 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Skill_Exchange.Application.DTOs;
+using Skill_Exchange.Application.DTOs.User;
+using Skill_Exchange.Application.Services.GlobalCommands;
 using Skill_Exchange.Application.Services.GlobalQuery;
 using Skill_Exchange.Application.Services.User.Queries;
 using Skill_Exchange.Domain.Entities;
@@ -32,13 +34,27 @@ namespace Skill_Exchange.API.Controllers
             return Ok(users);
         }*/
 
-        [HttpGet("{id:guid}")]
+        [HttpPost("")]
+        public async Task<IActionResult> GetById([FromBody]CreateUserDTO Dto)
+        {
+            var query = new GetUserByEmail(Dto.Email);
+            var user = await mediator.Send(query);
+            if (user != null) 
+            {
+                return BadRequest("User already exisits");
+            }
+            var command = new Add<AppUser, CreateUserDTO, CreateUserResponseDTO>(Dto);
+            var userResponse = await mediator.Send(command);
+            return Ok(userResponse);
+
+        }
+        /*[HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
             var query = new GetById<AppUser, UserDTO>(id);
             var users = await mediator.Send(query);
             return Ok(users);
-        }
+        }*/
 
 
 
