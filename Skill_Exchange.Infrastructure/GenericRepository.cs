@@ -6,8 +6,8 @@ namespace Skill_Exchange.Infrastructure
 {
     public class GenericRepository<T> : IGenericRepository<T> where T : class
     {
-        private readonly AppDbContext _context;
-        private DbSet<T> _dbSet;
+        protected readonly AppDbContext _context;
+        protected DbSet<T> _dbSet;
 
         public GenericRepository(AppDbContext context)
         {
@@ -46,7 +46,7 @@ namespace Skill_Exchange.Infrastructure
             //_dbSet.ToListAsync();
         }
 
-        public async Task<T> GetByIdAsync(int id)
+        public async Task<T> GetByIdAsync(Guid id)
         {
             return await _dbSet.FindAsync(id);
         }

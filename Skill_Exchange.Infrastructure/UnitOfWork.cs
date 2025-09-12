@@ -4,10 +4,10 @@ using Skill_Exchange.Infrastructure.Peresistence;
 
 namespace Skill_Exchange.Infrastructure
 {
-    public class UnitOfWork: IUnitOfWork
+    public class UnitOfWork : IUnitOfWork
     {
         private readonly AppDbContext _context;
-        public IGenericRepository<AppUser> Users { get; private set; }
+        public IUserRepository Users { get; private set; }
         public IGenericRepository<Skill> Skills { get; private set; }
         public IGenericRepository<SkillCategory> SkillCategories { get; private set; }
         public IGenericRepository<UserSkills> UserSkills { get; private set; }
@@ -18,7 +18,7 @@ namespace Skill_Exchange.Infrastructure
         public UnitOfWork(AppDbContext context)
         {
             _context = context;
-            Users = new GenericRepository<AppUser>(context);
+            Users = new UserRepository(context);
             Skills = new GenericRepository<Skill>(context);
             SkillCategories = new GenericRepository<SkillCategory>(context);
             UserSkills = new GenericRepository<UserSkills>(context);

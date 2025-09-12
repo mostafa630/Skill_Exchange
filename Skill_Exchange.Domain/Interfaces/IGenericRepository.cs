@@ -9,7 +9,7 @@
         // Delete an entity
         Task<bool> DeleteAsync(T entity);
         // Get an entity by its ID
-        Task<T> GetByIdAsync(int id);
+        Task<T> GetByIdAsync(Guid id);
         // Get all entities
         Task<IEnumerable<T>> GetAllAsync();
     }
