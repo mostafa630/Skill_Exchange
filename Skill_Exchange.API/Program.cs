@@ -12,6 +12,7 @@ using Skill_Exchange.Infrastructure;
 using Skill_Exchange.Infrastructure.Configurations;
 using Skill_Exchange.Infrastructure.Peresistence;
 using Skill_Exchange.Infrastructure.AuthenticationServices;
+using Skill_Exchange.Application.Interfaces;
 var builder = WebApplication.CreateBuilder(args);
 
 // ---------------------- Controllers ----------------------
@@ -24,6 +25,7 @@ builder.Services.AddSwaggerGen();
 //----------------------- JWT Authentication -----------
 var JwtOptions = builder.Configuration.GetSection("JWT").Get<JwtOptions>();
 builder.Services.AddSingleton(JwtOptions);
+builder.Services.AddScoped<IJwtService, JwtService>();
 // ---------------------- EF Core ----------------------
 builder.Services.AddDbContext<AppDbContext>(options =>
 {

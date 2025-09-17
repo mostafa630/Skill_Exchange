@@ -12,6 +12,6 @@ namespace Skill_Exchange.Application.DTOs.Auth
         public string AccessToken { get; set; } = default!;
         public string RefreshToken { get; set; } = default!;
         public DateTime Expiration { get; set; }
-        UserDTO Userinfo { get; set; }
+        public UserDTO Userinfo { get; set; }
     }
 }

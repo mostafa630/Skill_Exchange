@@ -15,6 +15,8 @@ namespace Skill_Exchange.Domain.Entities
         public string? Bio { get; set; }
         public DateTime LastActiveAt { get; set; }
         public string? ProfileImageUrl { get; set; }
+        public string? RefreshToken { get; set; } 
+        public DateTime? RefreshTokenExpiryTime { get; set; }
 
         // Navigation properties
         public ICollection<RatingAndFeedback> RatingsGiven { get; set; } = new List<RatingAndFeedback>();

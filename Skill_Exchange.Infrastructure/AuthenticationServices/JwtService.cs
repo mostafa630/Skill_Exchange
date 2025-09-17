@@ -23,17 +23,19 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
                 Issuer = _jwtOptions.Issuer,
                 Audience = _jwtOptions.Audience,
                 Expires = DateTime.UtcNow.AddMinutes(int.Parse(_jwtOptions.LifeTime)),
-            }
-
+                SigningCredentials = credentials,
+                Subject = new ClaimsIdentity(claims)
+            };
             var tokenHandler = new JwtSecurityTokenHandler();
-
-
-
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
         }
-
         public string GenerateRefreshToken()
         {
-            throw new NotImplementedException();
+            var randomNumber = new byte[32];
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(randomNumber);
+            return Convert.ToBase64String(randomNumber);
         }
     }
 }
