@@ -26,7 +26,7 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
             _jwtService = jwtService;
             _mapper = mapper;
         }
-        public async Task<LoginResponseDTO> LoginAsync(LoginRequestDto request)
+        public async Task<LoginResponseDto> LoginAsync(LoginRequestDto request)
         {
             var user = await _unitOfWork.Users.GetByEmailAsync(request.Email);
             if (user == null) 
@@ -44,6 +44,11 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
             throw new NotImplementedException();
         }
 
+        public Task<RegisterResponseDto> RegisterAsync(RegisterRequserDto request)
+        {
+            throw new NotImplementedException();
+        }
+
         // Task<AuthResponseDTO> IAuthService.GoogleLoginAsync(GoogleLoginRequestDto request)
         // {
         //     throw new NotImplementedException();
@@ -54,7 +59,7 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
         //     throw new NotImplementedException();
         // }
 
-        private async Task<LoginResponseDTO> GenerateLoginResponseAsync(AppUser user)
+        private async Task<LoginResponseDto> GenerateLoginResponseAsync(AppUser user)
         {
             var claims = new[]
             {
@@ -71,7 +76,7 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
             _unitOfWork.Users.UpdateAsync(user);
             await _unitOfWork.CompleteAsync();
 
-            return new LoginResponseDTO
+            return new LoginResponseDto
             {
                 AccessToken = accessToken,
                 RefreshToken = refreshToken,
