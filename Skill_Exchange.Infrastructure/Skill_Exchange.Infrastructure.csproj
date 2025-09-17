@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Skill_Exchange.Domain\Skill_Exchange.Domain.csproj" />
+    <ProjectReference Include="..\Skill_Exchange.Application\Skill_Exchange.Application.csproj" />
   </ItemGroup>
 
   <ItemGroup>

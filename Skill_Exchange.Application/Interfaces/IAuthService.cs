@@ -8,20 +8,20 @@ using System.Threading.Tasks;
 
 namespace Skill_Exchange.Application.Interfaces
 {
-    public interface IAuthenticationService
+    public interface IAuthService
     {
         // -------------------------
         // Register & Login
         // -------------------------
-        Task<AuthResponseDTO> RegisterAsync(CreateUserDTO request);
-        Task<AuthResponseDTO> LoginAsync(LoginRequestDto request);
+        //Task<AuthResponseDTO> RegisterAsync(CreateUserDTO request);
+        Task<LoginResponseDTO> LoginAsync(LoginRequestDto request);
         Task LogoutAsync(Guid userId);
 
         // -------------------------
         // Google
         // -------------------------
-        Task<AuthResponseDTO> GoogleSignupAsync(GoogleSignupRequestDto request);
-        Task<AuthResponseDTO> GoogleLoginAsync(GoogleLoginRequestDto request);
+        // Task<AuthResponseDTO> GoogleSignupAsync(GoogleSignupRequestDto request);
+        // Task<AuthResponseDTO> GoogleLoginAsync(GoogleLoginRequestDto request);
 
     }
 }

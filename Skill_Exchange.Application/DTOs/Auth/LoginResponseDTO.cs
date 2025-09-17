@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Skill_Exchange.Application.DTOs.Auth
 {
-    public class AuthResponseDTO
+    public class LoginResponseDTO
     {
         public string AccessToken { get; set; } = default!;
         public string RefreshToken { get; set; } = default!;
