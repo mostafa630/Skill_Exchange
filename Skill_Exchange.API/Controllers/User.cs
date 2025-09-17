@@ -1,62 +1,38 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using Skill_Exchange.Application.DTOs;
-using Skill_Exchange.Application.DTOs.User;
-using Skill_Exchange.Application.Services.GlobalCommands;
-using Skill_Exchange.Application.Services.GlobalQuery;
-using Skill_Exchange.Application.Services.User.Queries;
-using Skill_Exchange.Domain.Entities;
+using Skill_Exchange.Application.DTOs.Auth;
+using Skill_Exchange.Application.Interfaces;
 
 namespace Skill_Exchange.API.Controllers
 {
-    [Route("[controller]")]
-    public class UserController : Controller
+    [Route("api/[controller]")]
+    [ApiController]
+    public class UserController : ControllerBase
     {
+        private readonly IMediator _mediator;
+        private readonly IAuthService _authService;
 
-        private IMediator mediator;
-
-        public UserController(IMediator mediator)
+        public UserController(IMediator mediator, IAuthService authService)
         {
-            this.mediator = mediator;
+            _mediator = mediator;
+            _authService = authService;
         }
 
-        /*[HttpGet("")]
-        public async Task<IActionResult> GetAll()
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginRequestDto request)
         {
-            var query = new GetAll<AppUser, UserDTO>();
-            var users = await mediator.Send(query);
-            return Ok(users);
-        }*/
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-        [HttpPost("")]
-        public async Task<IActionResult> GetById([FromBody]CreateUserDTO Dto)
-        {
-            var query = new GetUserByEmail(Dto.Email);
-            var user = await mediator.Send(query);
-            if (user != null) 
+            try
             {
-                return BadRequest("User already exisits");
+                var response = await _authService.LoginAsync(request);
+                return Ok(response);
             }
-            var command = new Add<AppUser, CreateUserDTO, CreateUserResponseDTO>(Dto);
-            var userResponse = await mediator.Send(command);
-            return Ok(userResponse);
-
+            catch (Exception ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
         }
-        /*[HttpGet("{id:guid}")]
-        public async Task<IActionResult> GetById(Guid id)
-        {
-            var query = new GetById<AppUser, UserDTO>(id);
-            var users = await mediator.Send(query);
-            return Ok(users);
-        }*/
-
-
-
     }
 }
