@@ -13,6 +13,5 @@
         // Get all entities
         Task<IEnumerable<T>> GetAllAsync();
 
-
     }
 }

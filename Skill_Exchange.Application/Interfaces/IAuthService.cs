@@ -13,7 +13,7 @@ namespace Skill_Exchange.Application.Interfaces
         // -------------------------
         // Register & Login
         // -------------------------
-        Task<RegisterResponseDto> RegisterAsync(RegisterRequserDto request);
+        Task<RegisterResponseDto> RegisterAsync(CreateUserDTO request);
         Task<LoginResponseDto> LoginAsync(LoginRequestDto request);
         Task LogoutAsync(Guid userId);
 

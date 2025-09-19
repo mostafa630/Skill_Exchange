@@ -7,11 +7,13 @@ using Skill_Exchange.Application.DTOs.User;
 using Skill_Exchange.Application.Interfaces;
 using Skill_Exchange.Domain.Entities;
 using Skill_Exchange.Domain.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using Skill_Exchange.Application.DTOs.User;
 using System.Security.Claims;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.Extensions.ObjectPool;
+
 namespace Skill_Exchange.Infrastructure.AuthenticationServices
 {
     public class AuthService : IAuthService
@@ -20,7 +22,7 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
         private readonly PasswordHasher<AppUser> _passwordHasher = new();
         private readonly IJwtService _jwtService;
         private readonly IMapper _mapper;
-        public AuthService(IUnitOfWork unitOfWork,IJwtService jwtService,IMapper mapper)
+        public AuthService(IUnitOfWork unitOfWork, IJwtService jwtService, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _jwtService = jwtService;
@@ -29,11 +31,16 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
         public async Task<LoginResponseDto> LoginAsync(LoginRequestDto request)
         {
             var user = await _unitOfWork.Users.GetByEmailAsync(request.Email);
-            if (user == null) 
+            if (user == null)
                 throw new Exception("Invalid email or password.");
+            if (!user.EmailConfirmed)
+                throw new Exception("This Email is not Confirmed.");
+
             var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
+
             if (result == PasswordVerificationResult.Failed)
                 throw new Exception("Invalid email or password.");
+
             _unitOfWork.Users.UpdateAsync(user);
             await _unitOfWork.CompleteAsync();
             return await GenerateLoginResponseAsync(user);
@@ -44,9 +51,29 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
             throw new NotImplementedException();
         }
 
-        public Task<RegisterResponseDto> RegisterAsync(RegisterRequserDto request)
+        public async void RegisterAsync(CreateUserDTO createRequestDTO)
         {
-            throw new NotImplementedException();
+
+            // map from CreateUserDTO -----> user
+            var user = _mapper.Map<AppUser>(createRequestDTO);
+            user.PasswordHash = _passwordHasher.HashPassword(user, createRequestDTO.Password);
+            _passwordHasher.HashPassword(user, createRequestDTO.Password);
+            // save that user to the Db with EmailConfirmed = false
+            var is_user_created = await _unitOfWork.Users.AddAsync(user);
+
+            if (!is_user_created)
+            {
+
+            }
+            _unitOfWork.CompleteAsync();
+
+            var link = $"https://yourfrontend.com/verify-email?userId={user.Id}&token={null}";
+            if (!string.IsNullOrEmpty(user.Email))
+                await _emailService.SendEmailVerificationAsync(user.Email, link);
+
+            // send email with confirmation URl
+
+            //side note : that URL call our EmailConfirmation end point
         }
 
         // Task<AuthResponseDTO> IAuthService.GoogleLoginAsync(GoogleLoginRequestDto request)

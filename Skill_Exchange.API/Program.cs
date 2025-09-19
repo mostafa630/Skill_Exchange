@@ -1,18 +1,15 @@
-﻿using MediatR;
-using MediatR.Pipeline;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Skill_Exchange.API;
-using Skill_Exchange.Application.DTOs;
-using Skill_Exchange.Application.Services.GlobalQuery;
 using Skill_Exchange.Application.Services.GlobalQuery.Handlers;
-using Skill_Exchange.Domain.Entities;
 using Skill_Exchange.Domain.Interfaces;
 using Skill_Exchange.Infrastructure;
 using Skill_Exchange.Infrastructure.Configurations;
 using Skill_Exchange.Infrastructure.Peresistence;
 using Skill_Exchange.Infrastructure.AuthenticationServices;
 using Skill_Exchange.Application.Interfaces;
+
+
 var builder = WebApplication.CreateBuilder(args);
 
 // ---------------------- Controllers ----------------------
