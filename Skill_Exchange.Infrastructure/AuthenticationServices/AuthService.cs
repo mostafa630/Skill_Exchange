@@ -156,6 +156,9 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
                 pending.Expiry= DateTime.UtcNow.AddMinutes(30);
                 await _unitOfWork.PendingVerifications.UpdateAsync(pending);
                 await _unitOfWork.CompleteAsync();
+                var sent = await _emailService.SendEmailAsync(email, verificationCode);
+                if (!sent)
+                    return false;
                 return true;
             }
             var isSent = await _emailService.SendEmailAsync(email, verificationCode);
