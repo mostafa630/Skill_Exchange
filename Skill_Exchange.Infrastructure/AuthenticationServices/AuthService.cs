@@ -21,9 +21,9 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
         private readonly IUnitOfWork _unitOfWork;
         private readonly PasswordHasher<AppUser> _passwordHasher = new();
         private readonly IJwtService _jwtService;
-        private readonly EmailService _emailService;
+        private readonly IEmailService _emailService;
         private readonly IMapper _mapper;
-        public AuthService(IUnitOfWork unitOfWork, IJwtService jwtService, IMapper mapper, EmailService emailService)
+        public AuthService(IUnitOfWork unitOfWork, IJwtService jwtService, IMapper mapper, IEmailService emailService)
         {
             _unitOfWork = unitOfWork;
             _jwtService = jwtService;
@@ -56,6 +56,15 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
         public async Task<RegisterResponseDto> RegisterAsync(CreateUserDTO createRequestDTO)
         {
 
+            // check if user with that email already exists
+            var existingUser = await _unitOfWork.Users.GetByEmailAsync(createRequestDTO.Email);
+            if (existingUser != null)
+            {
+                return new RegisterResponseDto()
+                {
+                    Message = "User with that email already exists"
+                };
+            }
             // map from CreateUserDTO -----> user
             var user = _mapper.Map<AppUser>(createRequestDTO);
             user.PasswordHash = _passwordHasher.HashPassword(user, createRequestDTO.Password);
