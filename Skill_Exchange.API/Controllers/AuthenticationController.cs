@@ -33,6 +33,7 @@ namespace Skill_Exchange.API.Controllers
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex.Message);
                 return Unauthorized(new { message = ex.Message });
             }
         }
@@ -54,5 +55,23 @@ namespace Skill_Exchange.API.Controllers
             }
         }
 
+        [HttpPost("confirm-email")]
+        public async Task<IActionResult> ConfirmEmail([FromBody] ConfirmEmailRequestDto request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+            try
+            {
+                var result = await _authService.ConfirmEmailAsync(request);
+                if (result)
+                    return Ok(new { message = "Email confirmed successfully." });
+                else
+                    return BadRequest(new { message = "Invalid token or email." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
     }
 }

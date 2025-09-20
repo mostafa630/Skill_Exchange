@@ -17,6 +17,8 @@ namespace Skill_Exchange.Application.Interfaces
         Task<LoginResponseDto> LoginAsync(LoginRequestDto request);
         Task LogoutAsync(Guid userId);
 
+        Task<bool> ConfirmEmailAsync(ConfirmEmailRequestDto request);
+
         // -------------------------
         // Google
         // -------------------------
