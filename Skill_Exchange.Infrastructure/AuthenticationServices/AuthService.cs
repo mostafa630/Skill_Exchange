@@ -79,7 +79,7 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
                     Message = "Regsiteration Failed"
                 };
             }
-            _unitOfWork.CompleteAsync();
+            await _unitOfWork.CompleteAsync();
 
             var link = $"https://yourfrontend.com/verify-email?userId={user.Id}&token={null}";
             if (!string.IsNullOrEmpty(user.Email))
@@ -89,6 +89,17 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
             {
                 Message = "Registeration done and you need to verify your email first"
             };
+        }
+        public async Task<bool> ConfirmEmailAsync(ConfirmEmailRequestDto request)
+        {
+            var user = await _unitOfWork.Users.GetByIdAsync(request.UserId);
+            if (user == null)
+                throw new Exception("User not found.");
+
+            user.EmailConfirmed = true;
+            await _unitOfWork.Users.UpdateAsync(user);
+            await _unitOfWork.CompleteAsync();
+            return true;
         }
 
         // Task<AuthResponseDTO> IAuthService.GoogleLoginAsync(GoogleLoginRequestDto request)

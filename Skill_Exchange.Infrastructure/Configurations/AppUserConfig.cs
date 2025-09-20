@@ -21,7 +21,6 @@ public class AppUserConfig : IEntityTypeConfiguration<AppUser>
         .HasMaxLength(100);
 
         builder.Property(user => user.PhoneNumber)
-        .IsRequired()
         .HasMaxLength(32);
 
         builder.Property(user => user.DateOfBirth)
