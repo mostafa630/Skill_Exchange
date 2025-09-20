@@ -23,6 +23,10 @@ builder.Services.AddSwaggerGen();
 var JwtOptions = builder.Configuration.GetSection("JWT").Get<JwtOptions>();
 builder.Services.AddSingleton(JwtOptions);
 builder.Services.AddScoped<IJwtService, JwtService>();
+//----------------------- SMTP Settings ----------------
+var SmtpSettings = builder.Configuration.GetSection("SmtpSettings").Get<SmtpSettings>();
+builder.Services.AddSingleton(SmtpSettings);
+builder.Services.AddScoped<IEmailService, EmailService>();
 // ---------------------- EF Core ----------------------
 builder.Services.AddDbContext<AppDbContext>(options =>
 {

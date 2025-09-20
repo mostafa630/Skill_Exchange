@@ -8,10 +8,6 @@ namespace Skill_Exchange.Application.DTOs.Auth
 {
     public class RegisterResponseDto
     {
-        public Guid Id { get; set; }
-        //public string Token { get; set; } = default!;
         public string Message { get; set; }
-
-        //public DateTime Expiration { get; set; }
     }
 }

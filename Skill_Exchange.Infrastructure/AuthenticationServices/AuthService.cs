@@ -21,11 +21,13 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
         private readonly IUnitOfWork _unitOfWork;
         private readonly PasswordHasher<AppUser> _passwordHasher = new();
         private readonly IJwtService _jwtService;
+        private readonly EmailService _emailService;
         private readonly IMapper _mapper;
-        public AuthService(IUnitOfWork unitOfWork, IJwtService jwtService, IMapper mapper)
+        public AuthService(IUnitOfWork unitOfWork, IJwtService jwtService, IMapper mapper, EmailService emailService)
         {
             _unitOfWork = unitOfWork;
             _jwtService = jwtService;
+            _emailService = emailService;
             _mapper = mapper;
         }
         public async Task<LoginResponseDto> LoginAsync(LoginRequestDto request)
@@ -51,7 +53,7 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
             throw new NotImplementedException();
         }
 
-        public async void RegisterAsync(CreateUserDTO createRequestDTO)
+        public async Task<RegisterResponseDto> RegisterAsync(CreateUserDTO createRequestDTO)
         {
 
             // map from CreateUserDTO -----> user
@@ -63,17 +65,21 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
 
             if (!is_user_created)
             {
-
+                return new RegisterResponseDto()
+                {
+                    Message = "Regsiteration Failed"
+                };
             }
             _unitOfWork.CompleteAsync();
 
             var link = $"https://yourfrontend.com/verify-email?userId={user.Id}&token={null}";
             if (!string.IsNullOrEmpty(user.Email))
-                await _emailService.SendEmailVerificationAsync(user.Email, link);
+                await _emailService.SendEmailAsync(user.Email, link);
 
-            // send email with confirmation URl
-
-            //side note : that URL call our EmailConfirmation end point
+            return new RegisterResponseDto
+            {
+                Message = "Registeration done and you need to verify your email first"
+            };
         }
 
         // Task<AuthResponseDTO> IAuthService.GoogleLoginAsync(GoogleLoginRequestDto request)
