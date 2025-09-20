@@ -12,6 +12,7 @@ namespace Skill_Exchange.Domain.Interfaces
         IGenericRepository<Request> Requests { get; }
         IGenericRepository<Conversation> Conversations { get; }
         IGenericRepository<Notification> Notifications { get; }
+        IPendingVerificationRepository PendingVerifications { get; }
         Task<int> CompleteAsync();
         IGenericRepository<T> GetRepository<T>() where T : class;
     }

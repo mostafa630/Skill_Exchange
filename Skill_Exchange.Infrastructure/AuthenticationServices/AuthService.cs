@@ -1,18 +1,19 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.Extensions.ObjectPool;
 using Skill_Exchange.Application.DTOs.Auth;
+using Skill_Exchange.Application.DTOs.User;
 using Skill_Exchange.Application.DTOs.User;
 using Skill_Exchange.Application.Interfaces;
 using Skill_Exchange.Domain.Entities;
 using Skill_Exchange.Domain.Interfaces;
-using Skill_Exchange.Application.DTOs.User;
 using System.Security.Claims;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.Extensions.ObjectPool;
+using System.Security.Cryptography;
 
 namespace Skill_Exchange.Infrastructure.AuthenticationServices
 {
@@ -53,22 +54,31 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
             throw new NotImplementedException();
         }
 
-        public async Task<RegisterResponseDto> RegisterAsync(CreateUserDTO createRequestDTO)
+        public async Task<RegisterResponseDto> CompleteRegisterAsync(CreateUserDTO createRequestDTO)
         {
 
             // check if user with that email already exists
-            var existingUser = await _unitOfWork.Users.GetByEmailAsync(createRequestDTO.Email);
-            if (existingUser != null)
+            var PendingVerification = await _unitOfWork.PendingVerifications.GetByEmailAsync(createRequestDTO.Email);
+            if (PendingVerification == null)
             {
                 return new RegisterResponseDto()
                 {
-                    Message = "User with that email already exists"
+                    Message = "You Must Register First"
                 };
             }
+            if (!PendingVerification.IsConfirmed)
+            {
+                return new RegisterResponseDto()
+                {
+                    Message = "Mail is not Confirmed"
+                };
+
+            }
+
             // map from CreateUserDTO -----> user
             var user = _mapper.Map<AppUser>(createRequestDTO);
             user.PasswordHash = _passwordHasher.HashPassword(user, createRequestDTO.Password);
-            _passwordHasher.HashPassword(user, createRequestDTO.Password);
+            user.EmailConfirmed = true;
             // save that user to the Db with EmailConfirmed = false
             var is_user_created = await _unitOfWork.Users.AddAsync(user);
 
@@ -76,21 +86,18 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
             {
                 return new RegisterResponseDto()
                 {
-                    Message = "Regsiteration Failed"
+                    Message = "Regsiteration Failed!"
                 };
             }
+            await _unitOfWork.PendingVerifications.DeleteAsync(PendingVerification);
             await _unitOfWork.CompleteAsync();
-
-            var link = $"https://yourfrontend.com/verify-email?userId={user.Id}&token={null}";
-            if (!string.IsNullOrEmpty(user.Email))
-                await _emailService.SendEmailAsync(user.Email, link);
-
+            
             return new RegisterResponseDto
             {
-                Message = "Registeration done and you need to verify your email first"
+                Message = "Registeration succeded!"
             };
         }
-        public async Task<bool> ConfirmEmailAsync(ConfirmEmailRequestDto request)
+        /*public async Task<bool> ConfirmEmailAsync(ConfirmEmailRequestDto request)
         {
             var user = await _unitOfWork.Users.GetByIdAsync(request.UserId);
             if (user == null)
@@ -101,17 +108,8 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
             await _unitOfWork.CompleteAsync();
             return true;
         }
-
-        // Task<AuthResponseDTO> IAuthService.GoogleLoginAsync(GoogleLoginRequestDto request)
-        // {
-        //     throw new NotImplementedException();
-        // }
-
-        // Task<AuthResponseDTO> IAuthService.GoogleSignupAsync(GoogleSignupRequestDto request)
-        // {
-        //     throw new NotImplementedException();
-        // }
-
+*/
+        
         private async Task<LoginResponseDto> GenerateLoginResponseAsync(AppUser user)
         {
             var claims = new[]
@@ -139,5 +137,61 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
 
 
         }
+
+        public async Task<bool> StartRegisterAsync(string email)
+        {
+            var user = await _unitOfWork.Users.GetByEmailAsync(email);
+            if (user != null)
+                throw new Exception("User already exists");
+
+
+            var randomBytes = new byte[64];
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(randomBytes);
+            string verificationCode = Convert.ToBase64String(randomBytes);
+            var pending = await _unitOfWork.PendingVerifications.GetByEmailAsync(email);
+            if(pending != null)
+            {
+                pending.VerificationCode= verificationCode;
+                pending.Expiry= DateTime.UtcNow.AddMinutes(30);
+                await _unitOfWork.PendingVerifications.UpdateAsync(pending);
+                await _unitOfWork.CompleteAsync();
+                return true;
+            }
+            var isSent = await _emailService.SendEmailAsync(email, verificationCode);
+
+            if(!isSent)
+                return false;
+            var pendingVerification = new PendingVerification
+            {
+                Email = email,
+                VerificationCode = verificationCode,
+                Expiry = DateTime.UtcNow.AddMinutes(30),
+                IsConfirmed = false
+            };
+            await _unitOfWork.PendingVerifications.AddAsync(pendingVerification);
+            await _unitOfWork.CompleteAsync();
+            return true;
+        }
+        public async Task<bool> ConfirmEmailAsync(string verificationCode)
+        {
+            try
+            {
+                var pendingVerification = await _unitOfWork.PendingVerifications
+                .GetByVerificationCodeAsync(verificationCode);
+                if (pendingVerification == null || pendingVerification.Expiry < DateTime.UtcNow)
+                    return false;
+                pendingVerification.IsConfirmed = true;
+                await _unitOfWork.PendingVerifications.UpdateAsync(pendingVerification);
+                await _unitOfWork.CompleteAsync();
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+
     }
 }

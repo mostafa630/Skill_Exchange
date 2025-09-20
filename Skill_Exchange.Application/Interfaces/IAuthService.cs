@@ -13,11 +13,13 @@ namespace Skill_Exchange.Application.Interfaces
         // -------------------------
         // Register & Login
         // -------------------------
-        Task<RegisterResponseDto> RegisterAsync(CreateUserDTO request);
+        Task<bool> StartRegisterAsync(string email);
+        Task<bool> ConfirmEmailAsync(string verificationCode);
+        Task<RegisterResponseDto> CompleteRegisterAsync(CreateUserDTO request);
         Task<LoginResponseDto> LoginAsync(LoginRequestDto request);
         Task LogoutAsync(Guid userId);
 
-        Task<bool> ConfirmEmailAsync(ConfirmEmailRequestDto request);
+        
 
         // -------------------------
         // Google

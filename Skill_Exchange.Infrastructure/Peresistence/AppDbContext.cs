@@ -23,6 +23,7 @@ namespace Skill_Exchange.Infrastructure.Peresistence
         public DbSet<SkillCategory> SkillCategory { get; set; }
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<UserSkills> UserSkills { get; set; }
+        public DbSet<PendingVerification> PendingVerification { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

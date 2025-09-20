@@ -15,6 +15,7 @@ namespace Skill_Exchange.Infrastructure
         public IGenericRepository<Request> Requests { get; private set; }
         public IGenericRepository<Conversation> Conversations { get; private set; }
         public IGenericRepository<Notification> Notifications { get; private set; }
+        public IPendingVerificationRepository PendingVerifications { get; private set; }
 
         public UnitOfWork(AppDbContext context)
         {
@@ -27,6 +28,7 @@ namespace Skill_Exchange.Infrastructure
             Requests = new GenericRepository<Request>(context);
             Conversations = new GenericRepository<Conversation>(context);
             Notifications = new GenericRepository<Notification>(context);
+            PendingVerifications = new PendingVerificationRepository(context);
         }
         public async Task<int> CompleteAsync()
         {

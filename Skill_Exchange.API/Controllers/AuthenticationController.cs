@@ -20,15 +20,53 @@ namespace Skill_Exchange.API.Controllers
             _authService = authService;
         }
 
-        [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] CreateUserDTO request)
+        [HttpPost("startregister")]
+        public async Task<IActionResult> StartRegister(string email)
+        {
+            if (string.IsNullOrEmpty(email))
+                return BadRequest(new { message = "Email is required." });
+            try
+            {
+                var result = await _authService.StartRegisterAsync(email);
+                if (result)
+                    return Ok(new { message = "Verification code sent to email." });
+                else
+                    return BadRequest(new { message = "Failed to send verification code." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPost("confirm_email")]
+        public async Task<IActionResult> ConfirmEmail(string verificationCode)
+        {
+            if (string.IsNullOrEmpty(verificationCode))
+                return BadRequest(new { message = "Verification code is required." });
+            try
+            {
+                var result = await _authService.ConfirmEmailAsync(verificationCode);
+                if (result)
+                    return Ok(new { message = "Email confirmed successfully." });
+                else
+                    return BadRequest(new { message = "Invalid verification code." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPost("completeregister")]
+        public async Task<IActionResult> CompleteRegister([FromBody] CreateUserDTO request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
             try
             {
-                var response = await _authService.RegisterAsync(request);
+                var response = await _authService.CompleteRegisterAsync(request);
                 return Ok(response);
             }
             catch (Exception ex)
@@ -55,23 +93,6 @@ namespace Skill_Exchange.API.Controllers
             }
         }
 
-        [HttpPost("confirm-email")]
-        public async Task<IActionResult> ConfirmEmail([FromBody] ConfirmEmailRequestDto request)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-            try
-            {
-                var result = await _authService.ConfirmEmailAsync(request);
-                if (result)
-                    return Ok(new { message = "Email confirmed successfully." });
-                else
-                    return BadRequest(new { message = "Invalid token or email." });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-        }
+        
     }
 }
