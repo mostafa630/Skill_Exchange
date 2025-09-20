@@ -10,6 +10,7 @@ using Skill_Exchange.Infrastructure.AuthenticationServices;
 using Skill_Exchange.Application.Interfaces;
 
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 // ---------------------- Controllers ----------------------
@@ -27,6 +28,8 @@ builder.Services.AddScoped<IJwtService, JwtService>();
 var SmtpSettings = builder.Configuration.GetSection("SmtpSettings").Get<SmtpSettings>();
 builder.Services.AddSingleton(SmtpSettings);
 builder.Services.AddScoped<IEmailService, EmailService>();
+//--------------------- Authentication Services --------
+builder.Services.AddScoped<IAuthService, AuthService>();
 // ---------------------- EF Core ----------------------
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
