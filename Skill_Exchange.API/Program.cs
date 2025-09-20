@@ -27,6 +27,7 @@ builder.Services.AddScoped<IJwtService, JwtService>();
 //----------------------- SMTP Settings ----------------
 var SmtpSettings = builder.Configuration.GetSection("SmtpSettings").Get<SmtpSettings>();
 builder.Services.AddSingleton(SmtpSettings);
+//--------------------- Email Services ----------------
 builder.Services.AddScoped<IEmailService, EmailService>();
 //--------------------- Authentication Services --------
 builder.Services.AddScoped<IAuthService, AuthService>();
