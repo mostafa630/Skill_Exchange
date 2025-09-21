@@ -26,6 +26,17 @@ namespace Skill_Exchange.Application.Interfaces
         // -------------------------
         Task<RegisterResponseDto> GoogleSignupAsync(GoogleSignupRequestDto request);
         Task<LoginResponseDto> GoogleLoginAsync(GoogleLoginRequestDto request);
+        // -------------------------
+        // Password Management
+        // -------------------------
+        /*Task ForgotPasswordAsync(ForgotPasswordRequestDto request);
+        Task<bool> ResetPasswordAsync(ResetPasswordRequestDto request);
+        Task<bool> ChangePasswordAsync(Guid userId, ChangePasswordRequestDto request);
 
+
+        // -------------------------
+        // Refresh Tokens
+        // -------------------------
+        Task<RefreshTokenResponseDto> RefreshTokenAsync(RefreshTokenRequestDto request);*/
     }
 }

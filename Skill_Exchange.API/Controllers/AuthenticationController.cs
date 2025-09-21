@@ -20,7 +20,7 @@ namespace Skill_Exchange.API.Controllers
             _authService = authService;
         }
 
-        [HttpPost("startregister")]
+        [HttpPost("startre_gister")]
         public async Task<IActionResult> StartRegister(string email)
         {
             if (string.IsNullOrEmpty(email))
@@ -58,7 +58,7 @@ namespace Skill_Exchange.API.Controllers
             }
         }
 
-        [HttpPost("completeregister")]
+        [HttpPost("complete_register")]
         public async Task<IActionResult> CompleteRegister([FromBody] CreateUserDTO request)
         {
             if (!ModelState.IsValid)
@@ -93,6 +93,38 @@ namespace Skill_Exchange.API.Controllers
             }
         }
 
-        
+        [HttpPost("google_login")]
+        public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginRequestDto request)
+        {
+            if (request == null || string.IsNullOrEmpty(request.IdToken))
+                return BadRequest(new { message = "IdToken is required." });
+
+            try
+            {
+                var response = await _authService.GoogleLoginAsync(request);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
+        }
+
+        [HttpPost("google_signup")]
+        public async Task<IActionResult> GoogleSignup([FromBody] GoogleSignupRequestDto request)
+        {
+            if (request == null || string.IsNullOrEmpty(request.IdToken))
+                return BadRequest(new { message = "IdToken is required." });
+
+            try
+            {
+                var response = await _authService.GoogleSignupAsync(request);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
     }
 }
