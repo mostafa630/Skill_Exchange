@@ -24,8 +24,8 @@ namespace Skill_Exchange.Application.Interfaces
         // -------------------------
         // Google
         // -------------------------
-        // Task<AuthResponseDTO> GoogleSignupAsync(GoogleSignupRequestDto request);
-        // Task<AuthResponseDTO> GoogleLoginAsync(GoogleLoginRequestDto request);
+        Task<RegisterResponseDto> GoogleSignupAsync(GoogleSignupRequestDto request);
+        Task<LoginResponseDto> GoogleLoginAsync(GoogleLoginRequestDto request);
 
     }
 }

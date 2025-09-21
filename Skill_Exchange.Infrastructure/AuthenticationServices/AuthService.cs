@@ -10,6 +10,7 @@ using Skill_Exchange.Application.DTOs.Auth;
 using Skill_Exchange.Application.DTOs.User;
 using Skill_Exchange.Application.DTOs.User;
 using Skill_Exchange.Application.Interfaces;
+using Google.Apis.Auth;
 using Skill_Exchange.Domain.Entities;
 using Skill_Exchange.Domain.Interfaces;
 using System.Security.Claims;
@@ -134,8 +135,6 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
                 Expiration = DateTime.UtcNow.AddMinutes(60),
                 Userinfo = _mapper.Map<UserDTO>(user)
             };
-
-
         }
 
         public async Task<bool> StartRegisterAsync(string email)
@@ -195,6 +194,46 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
             }
         }
 
+        public async Task<RegisterResponseDto> GoogleSignupAsync(GoogleSignupRequestDto request)
+        {
+            var user = await _unitOfWork.Users.GetByEmailAsync(request.Email);
+            if (user != null)
+            {
+                return new RegisterResponseDto()
+                {
+                    Message = "User with this email already exists."
+                };
+            }
+            var payload = await GoogleJsonWebSignature.ValidateAsync(request.IdToken);
 
+            var newUser = new AppUser
+            {
+                FirstName = payload.GivenName,
+                LastName = payload.FamilyName,
+                Email = payload.Email
+            };
+            var is_user_created = await _unitOfWork.Users.AddAsync(newUser);
+            await _unitOfWork.CompleteAsync();
+            if (!is_user_created)
+            {
+                return new RegisterResponseDto()
+                {
+                    Message = "Regsiteration Failed!"
+                };
+            }
+            return new RegisterResponseDto()
+            {
+                Message = "Registeration succeded!"
+            };
+        }
+
+        public async Task<LoginResponseDto> GoogleLoginAsync(GoogleLoginRequestDto request)
+        {
+            var payload = await GoogleJsonWebSignature.ValidateAsync(request.IdToken);
+            var user = await _unitOfWork.Users.GetByEmailAsync(payload.Email);
+            if (user == null)
+                throw new Exception("User not found. Please signup with Google first.");
+            return await GenerateLoginResponseAsync(user);
+        }
     }
 }

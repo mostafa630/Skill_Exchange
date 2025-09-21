@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 
 namespace Skill_Exchange.Application.DTOs.Auth
 {
-    internal class GoogleSignupRequestDto
+    public class GoogleSignupRequestDto
     {
+        public string Email { get; set; } = default!;
+        public string IdToken { get; set; } = default!; // token from Google for verification
     }
 }

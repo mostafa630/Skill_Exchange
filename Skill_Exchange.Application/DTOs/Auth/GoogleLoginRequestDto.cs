@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace Skill_Exchange.Application.DTOs.Auth
 {
-    internal class GoogleLoginRequestDto
+    public class GoogleLoginRequestDto
     {
+        public string IdToken { get; set; } = default!;  // Google returns this token
     }
 }

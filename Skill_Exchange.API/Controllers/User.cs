@@ -9,6 +9,6 @@ namespace Skill_Exchange.API.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        
+
     }
 }
