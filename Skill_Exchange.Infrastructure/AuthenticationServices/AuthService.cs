@@ -15,6 +15,8 @@ using Skill_Exchange.Domain.Entities;
 using Skill_Exchange.Domain.Interfaces;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using System.ComponentModel;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Skill_Exchange.Infrastructure.AuthenticationServices
 {
@@ -92,25 +94,13 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
             }
             await _unitOfWork.PendingVerifications.DeleteAsync(PendingVerification);
             await _unitOfWork.CompleteAsync();
-            
+
             return new RegisterResponseDto
             {
                 Message = "Registeration succeded!"
             };
         }
-        /*public async Task<bool> ConfirmEmailAsync(ConfirmEmailRequestDto request)
-        {
-            var user = await _unitOfWork.Users.GetByIdAsync(request.UserId);
-            if (user == null)
-                throw new Exception("User not found.");
 
-            user.EmailConfirmed = true;
-            await _unitOfWork.Users.UpdateAsync(user);
-            await _unitOfWork.CompleteAsync();
-            return true;
-        }
-*/
-        
         private async Task<LoginResponseDto> GenerateLoginResponseAsync(AppUser user)
         {
             var claims = new[]
@@ -149,20 +139,20 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
             rng.GetBytes(randomBytes);
             string verificationCode = Convert.ToBase64String(randomBytes);
             var pending = await _unitOfWork.PendingVerifications.GetByEmailAsync(email);
-            if(pending != null)
+            if (pending != null)
             {
-                pending.VerificationCode= verificationCode;
-                pending.Expiry= DateTime.UtcNow.AddMinutes(30);
+                pending.VerificationCode = verificationCode;
+                pending.Expiry = DateTime.UtcNow.AddMinutes(30);
                 await _unitOfWork.PendingVerifications.UpdateAsync(pending);
                 await _unitOfWork.CompleteAsync();
-                var sent = await _emailService.SendEmailAsync(email, verificationCode);
+                var sent = await _emailService.SendEmailAsync(email, "Email Verification", "verification code", verificationCode);
                 if (!sent)
                     return false;
                 return true;
             }
-            var isSent = await _emailService.SendEmailAsync(email, verificationCode);
+            var isSent = await _emailService.SendEmailAsync(email, "Email Verification", "verification code", verificationCode);
 
-            if(!isSent)
+            if (!isSent)
                 return false;
             var pendingVerification = new PendingVerification
             {
@@ -210,8 +200,10 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
             {
                 FirstName = payload.GivenName,
                 LastName = payload.FamilyName,
-                Email = payload.Email
+                Email = payload.Email,
             };
+
+            newUser.EmailConfirmed = true;
             var is_user_created = await _unitOfWork.Users.AddAsync(newUser);
             await _unitOfWork.CompleteAsync();
             if (!is_user_created)
@@ -234,6 +226,103 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
             if (user == null)
                 throw new Exception("User not found. Please signup with Google first.");
             return await GenerateLoginResponseAsync(user);
+        }
+
+        public async Task<bool> ForgotPasswordAsync(string email)
+        {
+            var user = await _unitOfWork.Users.GetByEmailAsync(email);
+            if (user == null)
+            {
+                return false;
+            }
+            var Id = user.Id;
+            var link = $"https://yourfrontend.com/reset-password?token={Id}";
+
+            var is_sent = await _emailService.SendEmailAsync(email, "Reset Password", "click here : ", link);
+
+            if (!is_sent)
+                return false;
+            return true;
+        }
+
+        public async Task<bool> ResetPasswordAsync(ResetPasswordRequestDto request)
+        {
+            try
+            {
+                var user = await _unitOfWork.Users.GetByIdAsync(request.Token);  // token here is user  id
+                if (user == null)
+                    return false;
+
+                user.PasswordHash = _passwordHasher.HashPassword(user, request.NewPassword);
+                await _unitOfWork.Users.UpdateAsync(user);
+                await _unitOfWork.CompleteAsync();
+                return true;
+            }
+            catch
+            {
+                throw new Exception("Reset password failed");
+            }
+        }
+
+        public async Task<bool> ChangePasswordAsync(ChangePasswordRequestDto request)
+        {
+
+            try
+            {
+                var user = await _unitOfWork.Users.GetByIdAsync(request.Id);
+                if (user == null)
+                    return false;
+
+                var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.OldPassword);
+                if (result == PasswordVerificationResult.Failed)
+                    throw new Exception("Current password is invalid");
+
+                if (string.IsNullOrEmpty(request.NewPassword))
+                    throw new Exception("New Password is invalid");
+
+                user.PasswordHash = _passwordHasher.HashPassword(user, request.NewPassword);
+                await _unitOfWork.Users.UpdateAsync(user);
+                await _unitOfWork.CompleteAsync();
+                return true;
+            }
+            catch
+            {
+                throw new Exception("Change Password Failed");
+            }
+        }
+
+        public async Task<RefreshTokenResponseDto> RefreshTokenAsync(RefreshTokenRequestDto request)
+        {
+            var principal = _jwtService.GetPrincipalFromExpiredToken(request.AccessToken);
+            if (principal == null) throw new Exception("Invalid token");
+
+            var userId = principal.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await _unitOfWork.Users.GetByIdAsync(Guid.Parse(userId!));
+            if (user == null || user.RefreshToken != request.RefreshToken || user.RefreshTokenExpiryTime < DateTime.UtcNow)
+                throw new Exception("Invalid refresh token");
+
+            var newAccessToken = _jwtService.GenerateAccessToken(principal.Claims);
+            var newRefreshToken = GenerateToken();
+
+            user.RefreshToken = newRefreshToken;
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+            await _unitOfWork.Users.UpdateAsync(user);
+            await _unitOfWork.CompleteAsync();
+
+            return new RefreshTokenResponseDto
+            {
+                AccessToken = newAccessToken,
+                RefreshToken = newRefreshToken,
+                Expiration = DateTime.UtcNow.AddMinutes(60)
+            };
+        }
+
+        private string GenerateToken()
+        {
+            var randomBytes = new byte[64];
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(randomBytes);
+            return Convert.ToBase64String(randomBytes);
         }
     }
 }

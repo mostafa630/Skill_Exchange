@@ -8,6 +8,6 @@ namespace Skill_Exchange.Application.Interfaces
 {
     public interface IEmailService
     {
-        Task<bool> SendEmailAsync(string email, string content);
+        Task<bool> SendEmailAsync(string email, string subject, string message, string content);
     }
 }

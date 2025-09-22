@@ -20,7 +20,7 @@ namespace Skill_Exchange.API.Controllers
             _authService = authService;
         }
 
-        [HttpPost("startre_gister")]
+        [HttpPost("start_register")]
         public async Task<IActionResult> StartRegister(string email)
         {
             if (string.IsNullOrEmpty(email))
@@ -119,6 +119,62 @@ namespace Skill_Exchange.API.Controllers
             try
             {
                 var response = await _authService.GoogleSignupAsync(request);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+        [HttpPost("forget_password")]
+        public async Task<IActionResult> ForgetPassword(string email)
+        {
+            if (String.IsNullOrEmpty(email))
+                return BadRequest(new { message = "Invalid Email" });
+            try
+            {
+                var response = await _authService.ForgotPasswordAsync(email);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+        [HttpPost("reset_password")]
+        public async Task<IActionResult> ResetPassword(ResetPasswordRequestDto resetPasswordRequestDto)
+        {
+            try
+            {
+                var response = await _authService.ResetPasswordAsync(resetPasswordRequestDto);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPost("change_password")]
+        public async Task<IActionResult> ChangePassword(ChangePasswordRequestDto changePasswordRequestDto)
+        {
+            try
+            {
+                var response = await _authService.ChangePasswordAsync(changePasswordRequestDto);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPost("refresh_token")]
+        public async Task<IActionResult> RefreshToken(RefreshTokenRequestDto refreshTokenRequestDto)
+        {
+            try
+            {
+                var response = await _authService.RefreshTokenAsync(refreshTokenRequestDto);
                 return Ok(response);
             }
             catch (Exception ex)

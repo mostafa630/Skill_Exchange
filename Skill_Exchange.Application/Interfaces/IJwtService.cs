@@ -12,6 +12,6 @@ namespace Skill_Exchange.Application.Interfaces
     {
         public string GenerateAccessToken(IEnumerable<Claim> claims);
         public string GenerateRefreshToken();
-
+        ClaimsPrincipal? GetPrincipalFromExpiredToken(string token);
     }
 }

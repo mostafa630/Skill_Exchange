@@ -10,17 +10,17 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
         {
             _smtpSetting = smtpSettings;
         }
-        public async Task<bool> SendEmailAsync(string email, string content)
+        public async Task<bool> SendEmailAsync(string email, string subject, string messagge, string content)
         {
             try
             {
                 var message = new MimeMessage();
                 message.From.Add(new MailboxAddress(_smtpSetting.SenderName, _smtpSetting.Username));
                 message.To.Add(MailboxAddress.Parse(email));
-                message.Subject = "Verify your email";
+                message.Subject = $"{subject}";
                 message.Body = new TextPart("html")
                 {
-                    Text = $"<p>Verification Code : {content}</p>"
+                    Text = $"<p>{message} : {content}</p>"
                 };
 
                 using var client = new SmtpClient();

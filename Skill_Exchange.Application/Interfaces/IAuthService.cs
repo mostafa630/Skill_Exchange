@@ -19,7 +19,7 @@ namespace Skill_Exchange.Application.Interfaces
         Task<LoginResponseDto> LoginAsync(LoginRequestDto request);
         Task LogoutAsync(Guid userId);
 
-        
+
 
         // -------------------------
         // Google
@@ -29,14 +29,13 @@ namespace Skill_Exchange.Application.Interfaces
         // -------------------------
         // Password Management
         // -------------------------
-        /*Task ForgotPasswordAsync(ForgotPasswordRequestDto request);
+        Task<bool> ForgotPasswordAsync(string email);
         Task<bool> ResetPasswordAsync(ResetPasswordRequestDto request);
-        Task<bool> ChangePasswordAsync(Guid userId, ChangePasswordRequestDto request);
-
+        Task<bool> ChangePasswordAsync(ChangePasswordRequestDto request);
 
         // -------------------------
         // Refresh Tokens
         // -------------------------
-        Task<RefreshTokenResponseDto> RefreshTokenAsync(RefreshTokenRequestDto request);*/
+        Task<RefreshTokenResponseDto> RefreshTokenAsync(RefreshTokenRequestDto request);
     }
 }
