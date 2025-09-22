@@ -62,6 +62,17 @@ builder.Services.AddMediatR(cfg =>
 
 builder.Services.AddMediatorHandlers();
 
+// ==================== Add CORS ====================
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
+
 // ---------------------- Build App ----------------------
 var app = builder.Build();
 
@@ -84,7 +95,9 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
     });
 }
 
+
 app.UseHttpsRedirection();
+app.UseCors("AllowAll");
 app.UseAuthorization();
 app.MapControllers();
 
