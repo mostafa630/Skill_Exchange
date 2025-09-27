@@ -6,8 +6,8 @@ namespace Skill_Exchange.Application.FluentValidation.Auth
     {
         public ConfirmEmailRequestDtoValidator()
         {
-            RuleFor(x => x.UserId)
-                .NotEmpty().WithMessage("User Id is required.");
+            RuleFor(x => x.VerificationCode)
+                .NotEmpty().WithMessage("Verification Code is required.");
         }
     }
 }

@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace Skill_Exchange.Application.DTOs.Auth
 {
-    public class ConfirmEmailRequestDto
+    public class StartRegisterRequestDto
     {
-        public string VerificationCode { get; set; }
+        public string Email { get; set; }
     }
 }
