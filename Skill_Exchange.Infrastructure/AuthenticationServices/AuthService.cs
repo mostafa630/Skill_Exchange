@@ -1,4 +1,4 @@
-using AutoMapper;
+﻿using AutoMapper;
 using Google.Apis.Auth;
 using Microsoft.AspNetCore.Identity;
 using Skill_Exchange.Application.DTOs;
@@ -14,11 +14,15 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
 {
     public class AuthService : IAuthService
     {
+        // ================================
+        // Dependencies
+        // ================================
         private readonly IUnitOfWork _unitOfWork;
         private readonly PasswordHasher<AppUser> _passwordHasher = new();
         private readonly IJwtService _jwtService;
         private readonly IEmailService _emailService;
         private readonly IMapper _mapper;
+
         public AuthService(IUnitOfWork unitOfWork, IJwtService jwtService, IMapper mapper, IEmailService emailService)
         {
             _unitOfWork = unitOfWork;
@@ -26,114 +30,24 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
             _emailService = emailService;
             _mapper = mapper;
         }
-        public async Task<Result<LoginResponseDto>> LoginAsync(LoginRequestDto request)
-        {
-            var user = await _unitOfWork.Users.GetByEmailAsync(request.Email);
-            if (user == null)
-                return Result<LoginResponseDto>.Fail("Invalid email or password.");
 
-            if (!user.EmailConfirmed)
-                return Result<LoginResponseDto>.Fail("This Email is not Confirmed.");
-
-            var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
-
-            if (result == PasswordVerificationResult.Failed)
-                return Result<LoginResponseDto>.Fail("Invalid email or password.");
-
-            _unitOfWork.Users.UpdateAsync(user);
-            await _unitOfWork.CompleteAsync();
-
-            var loginResponse = await GenerateLoginResponseAsync(user);
-            return Result<LoginResponseDto>.Ok(loginResponse);
-        }
-
-
-        public Task LogoutAsync(Guid userId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<RegisterResponseDto> CompleteRegisterAsync(CreateUserDTO createRequestDTO)
-        {
-
-            // check if user with that email already exists
-            var PendingVerification = await _unitOfWork.PendingVerifications.GetByEmailAsync(createRequestDTO.Email);
-            if (PendingVerification == null)
-            {
-                return new RegisterResponseDto()
-                {
-                    Message = "You Must Register First"
-                };
-            }
-            if (!PendingVerification.IsConfirmed)
-            {
-                return new RegisterResponseDto()
-                {
-                    Message = "Mail is not Confirmed"
-                };
-
-            }
-
-            // map from CreateUserDTO -----> user
-            var user = _mapper.Map<AppUser>(createRequestDTO);
-            user.PasswordHash = _passwordHasher.HashPassword(user, createRequestDTO.Password);
-            user.EmailConfirmed = true;
-            // save that user to the Db with EmailConfirmed = false
-            var is_user_created = await _unitOfWork.Users.AddAsync(user);
-
-            if (!is_user_created)
-            {
-                return new RegisterResponseDto()
-                {
-                    Message = "Regsiteration Failed!"
-                };
-            }
-            await _unitOfWork.PendingVerifications.DeleteAsync(PendingVerification);
-            await _unitOfWork.CompleteAsync();
-
-            return new RegisterResponseDto
-            {
-                Message = "Registeration succeded!"
-            };
-        }
-
-        private async Task<LoginResponseDto> GenerateLoginResponseAsync(AppUser user)
-        {
-            var claims = new[]
-            {
-                new Claim(System.Security.Claims.ClaimTypes.NameIdentifier,user.Id.ToString()),
-                new Claim(System.Security.Claims.ClaimTypes.Email,user.Email),
-                new Claim(System.Security.Claims.ClaimTypes.Name,$"{user.FirstName} {user.LastName}")
-            };
-            var accessToken = _jwtService.GenerateAccessToken(claims);
-            var refreshToken = _jwtService.GenerateRefreshToken();
-
-            user.RefreshToken = refreshToken;
-            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
-
-            _unitOfWork.Users.UpdateAsync(user);
-            await _unitOfWork.CompleteAsync();
-
-            return new LoginResponseDto
-            {
-                AccessToken = accessToken,
-                RefreshToken = refreshToken,
-                Expiration = DateTime.UtcNow.AddMinutes(60),
-                Userinfo = _mapper.Map<UserDTO>(user)
-            };
-        }
-
+        // ================================
+        // REGISTRATION
+        // ================================
         public async Task<Result<bool>> StartRegisterAsync(string email)
         {
+            // Check if user already exists
             var user = await _unitOfWork.Users.GetByEmailAsync(email);
             if (user != null)
                 return Result<bool>.Fail("User already exists");
 
+            // Generate verification code
             var randomBytes = new byte[64];
             using var rng = RandomNumberGenerator.Create();
             rng.GetBytes(randomBytes);
             string verificationCode = Convert.ToBase64String(randomBytes);
 
+            // If a pending verification exists → update it
             var pending = await _unitOfWork.PendingVerifications.GetByEmailAsync(email);
             if (pending != null)
             {
@@ -146,6 +60,7 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
                 return sent ? Result<bool>.Ok(true) : Result<bool>.Fail("Failed to send verification email.");
             }
 
+            // Otherwise create new pending verification
             var isSent = await _emailService.SendEmailAsync(email, "Email Verification", "verification code", verificationCode);
             if (!isSent)
                 return Result<bool>.Fail("Failed to send verification email.");
@@ -167,10 +82,11 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
         {
             try
             {
-                var pendingVerification = await _unitOfWork.PendingVerifications
-                .GetByVerificationCodeAsync(verificationCode);
+                var pendingVerification = await _unitOfWork.PendingVerifications.GetByVerificationCodeAsync(verificationCode);
                 if (pendingVerification == null || pendingVerification.Expiry < DateTime.UtcNow)
                     return false;
+
+                // Mark as confirmed
                 pendingVerification.IsConfirmed = true;
                 await _unitOfWork.PendingVerifications.UpdateAsync(pendingVerification);
                 await _unitOfWork.CompleteAsync();
@@ -182,39 +98,97 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
             }
         }
 
+        public async Task<RegisterResponseDto> CompleteRegisterAsync(CreateUserDTO createRequestDTO)
+        {
+            // Check if pending verification exists
+            var PendingVerification = await _unitOfWork.PendingVerifications.GetByEmailAsync(createRequestDTO.Email);
+            if (PendingVerification == null)
+                return new RegisterResponseDto { Message = "You Must Register First" };
+
+            if (!PendingVerification.IsConfirmed)
+                return new RegisterResponseDto { Message = "Mail is not Confirmed" };
+
+            // Map DTO → Entity and hash password
+            var user = _mapper.Map<AppUser>(createRequestDTO);
+            user.PasswordHash = _passwordHasher.HashPassword(user, createRequestDTO.Password);
+            user.EmailConfirmed = true;
+
+            // Save new user
+            var is_user_created = await _unitOfWork.Users.AddAsync(user);
+            if (!is_user_created)
+                return new RegisterResponseDto { Message = "Regsiteration Failed!" };
+
+            // Remove pending verification and save
+            await _unitOfWork.PendingVerifications.DeleteAsync(PendingVerification);
+            await _unitOfWork.CompleteAsync();
+
+            return new RegisterResponseDto { Message = "Registeration succeded!" };
+        }
+
+        
+
+        // ================================
+        // LOGIN / LOGOUT
+        // ================================
+        public async Task<Result<LoginResponseDto>> LoginAsync(LoginRequestDto request)
+        {
+            // Get user by email
+            var user = await _unitOfWork.Users.GetByEmailAsync(request.Email);
+            if (user == null)
+                return Result<LoginResponseDto>.Fail("Invalid email or password.");
+
+            // Check if email is confirmed
+            if (!user.EmailConfirmed)
+                return Result<LoginResponseDto>.Fail("This Email is not Confirmed.");
+
+            // Verify password
+            var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
+            if (result == PasswordVerificationResult.Failed)
+                return Result<LoginResponseDto>.Fail("Invalid email or password.");
+
+            // Update user and save changes
+            _unitOfWork.Users.UpdateAsync(user);
+            await _unitOfWork.CompleteAsync();
+
+            // Generate response with tokens
+            var loginResponse = await GenerateLoginResponseAsync(user);
+            return Result<LoginResponseDto>.Ok(loginResponse);
+        }
+
+        public Task LogoutAsync(Guid userId)
+        {
+            // To be implemented later
+            throw new NotImplementedException();
+        }
+
+        // ================================
+        // GOOGLE AUTH
+        // ================================
         public async Task<RegisterResponseDto> GoogleSignupAsync(GoogleSignupRequestDto request)
         {
+            // Check if user exists
             var user = await _unitOfWork.Users.GetByEmailAsync(request.Email);
             if (user != null)
-            {
-                return new RegisterResponseDto()
-                {
-                    Message = "User with this email already exists."
-                };
-            }
+                return new RegisterResponseDto { Message = "User with this email already exists." };
+
+            // Validate Google token
             var payload = await GoogleJsonWebSignature.ValidateAsync(request.IdToken);
 
+            // Create new user from Google payload
             var newUser = new AppUser
             {
                 FirstName = payload.GivenName,
                 LastName = payload.FamilyName,
                 Email = payload.Email,
+                EmailConfirmed = true
             };
 
-            newUser.EmailConfirmed = true;
             var is_user_created = await _unitOfWork.Users.AddAsync(newUser);
             await _unitOfWork.CompleteAsync();
             if (!is_user_created)
-            {
-                return new RegisterResponseDto()
-                {
-                    Message = "Regsiteration Failed!"
-                };
-            }
-            return new RegisterResponseDto()
-            {
-                Message = "Registeration succeded!"
-            };
+                return new RegisterResponseDto { Message = "Regsiteration Failed!" };
+
+            return new RegisterResponseDto { Message = "Registeration succeded!" };
         }
 
         public async Task<LoginResponseDto> GoogleLoginAsync(GoogleLoginRequestDto request)
@@ -223,31 +197,33 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
             var user = await _unitOfWork.Users.GetByEmailAsync(payload.Email);
             if (user == null)
                 throw new Exception("User not found. Please signup with Google first.");
+
             return await GenerateLoginResponseAsync(user);
         }
 
+        // ================================
+        // PASSWORD MANAGEMENT
+        // ================================
         public async Task<bool> ForgotPasswordAsync(string email)
         {
             var user = await _unitOfWork.Users.GetByEmailAsync(email);
             if (user == null)
-            {
                 return false;
-            }
+
+            // Generate reset link
             var Id = user.Id;
             var link = $"https://yourfrontend.com/reset-password?token={Id}";
 
             var is_sent = await _emailService.SendEmailAsync(email, "Reset Password", "click here : ", link);
-
-            if (!is_sent)
-                return false;
-            return true;
+            return is_sent;
         }
 
         public async Task<bool> ResetPasswordAsync(ResetPasswordRequestDto request)
         {
             try
             {
-                var user = await _unitOfWork.Users.GetByIdAsync(request.Token);  // token here is user  id
+                // Token here = userId
+                var user = await _unitOfWork.Users.GetByIdAsync(request.Token);
                 if (user == null)
                     return false;
 
@@ -268,6 +244,7 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
             if (user == null)
                 return Result<bool>.Fail("User not found");
 
+            // Verify old password
             var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.OldPassword);
             if (result == PasswordVerificationResult.Failed)
                 return Result<bool>.Fail("Current password is invalid");
@@ -275,6 +252,7 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
             if (string.IsNullOrEmpty(request.NewPassword))
                 return Result<bool>.Fail("New password is invalid");
 
+            // Update with new password
             user.PasswordHash = _passwordHasher.HashPassword(user, request.NewPassword);
             await _unitOfWork.Users.UpdateAsync(user);
             await _unitOfWork.CompleteAsync();
@@ -282,17 +260,21 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
             return Result<bool>.Ok(true);
         }
 
-
+        // ================================
+        // TOKEN REFRESH
+        // ================================
         public async Task<RefreshTokenResponseDto> RefreshTokenAsync(RefreshTokenRequestDto request)
         {
             var principal = _jwtService.GetPrincipalFromExpiredToken(request.AccessToken);
-            if (principal == null) throw new Exception("Invalid token");
+            if (principal == null)
+                throw new Exception("Invalid token");
 
             var userId = principal.FindFirstValue(ClaimTypes.NameIdentifier);
             var user = await _unitOfWork.Users.GetByIdAsync(Guid.Parse(userId!));
             if (user == null || user.RefreshToken != request.RefreshToken || user.RefreshTokenExpiryTime < DateTime.UtcNow)
                 throw new Exception("Invalid refresh token");
 
+            // Generate new tokens
             var newAccessToken = _jwtService.GenerateAccessToken(principal.Claims);
             var newRefreshToken = GenerateToken();
 
@@ -309,8 +291,41 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
             };
         }
 
+        // ================================
+        // HELPERS
+        // ================================
+        private async Task<LoginResponseDto> GenerateLoginResponseAsync(AppUser user)
+        {
+            // Build claims
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier,user.Id.ToString()),
+                new Claim(ClaimTypes.Email,user.Email),
+                new Claim(ClaimTypes.Name,$"{user.FirstName} {user.LastName}")
+            };
+
+            // Generate tokens
+            var accessToken = _jwtService.GenerateAccessToken(claims);
+            var refreshToken = _jwtService.GenerateRefreshToken();
+
+            // Update user with refresh token
+            user.RefreshToken = refreshToken;
+            user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+            _unitOfWork.Users.UpdateAsync(user);
+            await _unitOfWork.CompleteAsync();
+
+            return new LoginResponseDto
+            {
+                AccessToken = accessToken,
+                RefreshToken = refreshToken,
+                Expiration = DateTime.UtcNow.AddMinutes(60),
+                Userinfo = _mapper.Map<UserDTO>(user)
+            };
+        }
+
         private string GenerateToken()
         {
+            // Generate random secure token
             var randomBytes = new byte[64];
             using var rng = RandomNumberGenerator.Create();
             rng.GetBytes(randomBytes);
