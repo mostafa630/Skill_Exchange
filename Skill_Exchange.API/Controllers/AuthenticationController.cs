@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Skill_Exchange.Application.DTOs.Auth;
 using Skill_Exchange.Application.DTOs.User;
@@ -20,167 +16,125 @@ namespace Skill_Exchange.API.Controllers
             _authService = authService;
         }
 
+        //  Step 1: Start Register (send verification email)
         [HttpPost("start_register")]
-        public async Task<IActionResult> StartRegister(string email)
+        public async Task<IActionResult> StartRegister([FromBody] string email)
         {
             if (string.IsNullOrEmpty(email))
                 return BadRequest(new { message = "Email is required." });
-            try
-            {
-                var result = await _authService.StartRegisterAsync(email);
-                if (result)
-                    return Ok(new { message = "Verification code sent to email." });
-                else
-                    return BadRequest(new { message = "Failed to send verification code." });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+
+            var result = await _authService.StartRegisterAsync(email);
+            return result.Success
+                ? Ok(new { message = "Verification code sent to email." })
+                : BadRequest(new { message = result.Error });
         }
 
+        //  Step 2: Confirm Email with verification code
         [HttpPost("confirm_email")]
-        public async Task<IActionResult> ConfirmEmail(string verificationCode)
+        public async Task<IActionResult> ConfirmEmail([FromBody] string verificationCode)
         {
             if (string.IsNullOrEmpty(verificationCode))
                 return BadRequest(new { message = "Verification code is required." });
-            try
-            {
-                var result = await _authService.ConfirmEmailAsync(verificationCode);
-                if (result)
-                    return Ok(new { message = "Email confirmed successfully." });
-                else
-                    return BadRequest(new { message = "Invalid verification code." });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+
+            var result = await _authService.ConfirmEmailAsync(verificationCode);
+            return result
+                ? Ok(new { message = "Email confirmed successfully." })
+                : BadRequest(new { message = "Invalid or expired verification code." });
         }
 
+        //  Step 3: Complete Register (create account)
         [HttpPost("complete_register")]
         public async Task<IActionResult> CompleteRegister([FromBody] CreateUserDTO request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            try
-            {
-                var response = await _authService.CompleteRegisterAsync(request);
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-                return Unauthorized(new { message = ex.Message });
-            }
+            var response = await _authService.CompleteRegisterAsync(request);
+            return Ok(response);
         }
 
+        //  Login with Email & Password
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequestDto request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            try
-            {
-                var response = await _authService.LoginAsync(request);
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                return Unauthorized(new { message = ex.Message });
-            }
+            var result = await _authService.LoginAsync(request);
+            return result.Success
+                ? Ok(result.Data)
+                : Unauthorized(new { message = result.Error });
         }
 
+        //  Google Login
         [HttpPost("google_login")]
         public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginRequestDto request)
         {
             if (request == null || string.IsNullOrEmpty(request.IdToken))
                 return BadRequest(new { message = "IdToken is required." });
 
-            try
-            {
-                var response = await _authService.GoogleLoginAsync(request);
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                return Unauthorized(new { message = ex.Message });
-            }
+            var response = await _authService.GoogleLoginAsync(request);
+            return Ok(response);
         }
 
+        //  Google Signup
         [HttpPost("google_signup")]
         public async Task<IActionResult> GoogleSignup([FromBody] GoogleSignupRequestDto request)
         {
             if (request == null || string.IsNullOrEmpty(request.IdToken))
                 return BadRequest(new { message = "IdToken is required." });
 
-            try
-            {
-                var response = await _authService.GoogleSignupAsync(request);
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            var response = await _authService.GoogleSignupAsync(request);
+            return Ok(response);
         }
-        [HttpPost("forget_password")]
-        public async Task<IActionResult> ForgetPassword(string email)
+
+        //  Forgot Password (send reset link)
+        [HttpPost("forgot_password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] string email)
         {
-            if (String.IsNullOrEmpty(email))
+            if (string.IsNullOrEmpty(email))
                 return BadRequest(new { message = "Invalid Email" });
-            try
-            {
-                var response = await _authService.ForgotPasswordAsync(email);
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+
+            var response = await _authService.ForgotPasswordAsync(email);
+            return response
+                ? Ok(new { message = "Password reset link sent to email." })
+                : BadRequest(new { message = "Failed to send reset link." });
         }
+
+        //  Reset Password
         [HttpPost("reset_password")]
-        public async Task<IActionResult> ResetPassword(ResetPasswordRequestDto resetPasswordRequestDto)
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequestDto request)
         {
-            try
-            {
-                var response = await _authService.ResetPasswordAsync(resetPasswordRequestDto);
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            var response = await _authService.ResetPasswordAsync(request);
+            return response
+                ? Ok(new { message = "Password reset successfully." })
+                : BadRequest(new { message = "Reset password failed." });
         }
 
+        //  Change Password
         [HttpPost("change_password")]
-        public async Task<IActionResult> ChangePassword(ChangePasswordRequestDto changePasswordRequestDto)
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequestDto request)
         {
-            try
-            {
-                var response = await _authService.ChangePasswordAsync(changePasswordRequestDto);
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            var result = await _authService.ChangePasswordAsync(request);
+            return result.Success
+                ? Ok(new { message = "Password changed successfully." })
+                : BadRequest(new { message = result.Error});
         }
 
+        //  Refresh Token
         [HttpPost("refresh_token")]
-        public async Task<IActionResult> RefreshToken(RefreshTokenRequestDto refreshTokenRequestDto)
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequestDto request)
         {
-            try
-            {
-                var response = await _authService.RefreshTokenAsync(refreshTokenRequestDto);
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            var response = await _authService.RefreshTokenAsync(request);
+            return Ok(response);
         }
+
+        
+        /*[HttpPost("logout")]
+        public async Task<IActionResult> Logout([FromBody] Guid userId)
+        {
+            await _authService.LogoutAsync(userId);
+            return Ok(new { message = "User logged out successfully." });
+        }*/
     }
 }
