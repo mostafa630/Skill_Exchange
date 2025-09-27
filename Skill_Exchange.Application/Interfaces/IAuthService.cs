@@ -1,4 +1,5 @@
-﻿using Skill_Exchange.Application.DTOs.Auth;
+﻿using Skill_Exchange.Application.DTOs;
+using Skill_Exchange.Application.DTOs.Auth;
 using Skill_Exchange.Application.DTOs.User;
 using System;
 using System.Collections.Generic;
@@ -13,10 +14,10 @@ namespace Skill_Exchange.Application.Interfaces
         // -------------------------
         // Register & Login
         // -------------------------
-        Task<bool> StartRegisterAsync(string email);
+        Task<Result<bool>> StartRegisterAsync(string email);
         Task<bool> ConfirmEmailAsync(string verificationCode);
         Task<RegisterResponseDto> CompleteRegisterAsync(CreateUserDTO request);
-        Task<LoginResponseDto> LoginAsync(LoginRequestDto request);
+        Task<Result<LoginResponseDto>> LoginAsync(LoginRequestDto request);
         Task LogoutAsync(Guid userId);
 
 
@@ -31,7 +32,7 @@ namespace Skill_Exchange.Application.Interfaces
         // -------------------------
         Task<bool> ForgotPasswordAsync(string email);
         Task<bool> ResetPasswordAsync(ResetPasswordRequestDto request);
-        Task<bool> ChangePasswordAsync(ChangePasswordRequestDto request);
+        Task<Result<bool>> ChangePasswordAsync(ChangePasswordRequestDto request);
 
         // -------------------------
         // Refresh Tokens

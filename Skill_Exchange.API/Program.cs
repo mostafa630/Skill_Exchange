@@ -8,6 +8,8 @@ using Skill_Exchange.Infrastructure.Configurations;
 using Skill_Exchange.Infrastructure.Peresistence;
 using Skill_Exchange.Infrastructure.AuthenticationServices;
 using Skill_Exchange.Application.Interfaces;
+using FluentValidation.AspNetCore;
+using Skill_Exchange.Application.FluentValidation.Auth;
 
 
 
@@ -72,6 +74,13 @@ builder.Services.AddCors(options =>
               .AllowAnyHeader();
     });
 });
+// ==================== Add Controllers & FluentValidation ====================
+builder.Services.AddControllers()
+    .AddFluentValidation(fv =>
+    {
+        fv.RegisterValidatorsFromAssemblyContaining<LoginRequestDtoValidator>();
+        fv.DisableDataAnnotationsValidation = true; // optional: disable default attributes
+    });
 
 // ---------------------- Build App ----------------------
 var app = builder.Build();

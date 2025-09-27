@@ -1,22 +1,14 @@
 using AutoMapper;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Http;
+using Google.Apis.Auth;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using Microsoft.Extensions.ObjectPool;
+using Skill_Exchange.Application.DTOs;
 using Skill_Exchange.Application.DTOs.Auth;
 using Skill_Exchange.Application.DTOs.User;
-using Skill_Exchange.Application.DTOs.User;
 using Skill_Exchange.Application.Interfaces;
-using Google.Apis.Auth;
 using Skill_Exchange.Domain.Entities;
 using Skill_Exchange.Domain.Interfaces;
 using System.Security.Claims;
 using System.Security.Cryptography;
-using System.ComponentModel;
-using Microsoft.AspNetCore.Authorization;
 
 namespace Skill_Exchange.Infrastructure.AuthenticationServices
 {
@@ -34,23 +26,27 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
             _emailService = emailService;
             _mapper = mapper;
         }
-        public async Task<LoginResponseDto> LoginAsync(LoginRequestDto request)
+        public async Task<Result<LoginResponseDto>> LoginAsync(LoginRequestDto request)
         {
             var user = await _unitOfWork.Users.GetByEmailAsync(request.Email);
             if (user == null)
-                throw new Exception("Invalid email or password.");
+                return Result<LoginResponseDto>.Fail("Invalid email or password.");
+
             if (!user.EmailConfirmed)
-                throw new Exception("This Email is not Confirmed.");
+                return Result<LoginResponseDto>.Fail("This Email is not Confirmed.");
 
             var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
 
             if (result == PasswordVerificationResult.Failed)
-                throw new Exception("Invalid email or password.");
+                return Result<LoginResponseDto>.Fail("Invalid email or password.");
 
             _unitOfWork.Users.UpdateAsync(user);
             await _unitOfWork.CompleteAsync();
-            return await GenerateLoginResponseAsync(user);
+
+            var loginResponse = await GenerateLoginResponseAsync(user);
+            return Result<LoginResponseDto>.Ok(loginResponse);
         }
+
 
         public Task LogoutAsync(Guid userId)
         {
@@ -127,17 +123,17 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
             };
         }
 
-        public async Task<bool> StartRegisterAsync(string email)
+        public async Task<Result<bool>> StartRegisterAsync(string email)
         {
             var user = await _unitOfWork.Users.GetByEmailAsync(email);
             if (user != null)
-                throw new Exception("User already exists");
-
+                return Result<bool>.Fail("User already exists");
 
             var randomBytes = new byte[64];
             using var rng = RandomNumberGenerator.Create();
             rng.GetBytes(randomBytes);
             string verificationCode = Convert.ToBase64String(randomBytes);
+
             var pending = await _unitOfWork.PendingVerifications.GetByEmailAsync(email);
             if (pending != null)
             {
@@ -145,15 +141,15 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
                 pending.Expiry = DateTime.UtcNow.AddMinutes(30);
                 await _unitOfWork.PendingVerifications.UpdateAsync(pending);
                 await _unitOfWork.CompleteAsync();
-                var sent = await _emailService.SendEmailAsync(email, "Email Verification", "verification code", verificationCode);
-                if (!sent)
-                    return false;
-                return true;
-            }
-            var isSent = await _emailService.SendEmailAsync(email, "Email Verification", "verification code", verificationCode);
 
+                var sent = await _emailService.SendEmailAsync(email, "Email Verification", "verification code", verificationCode);
+                return sent ? Result<bool>.Ok(true) : Result<bool>.Fail("Failed to send verification email.");
+            }
+
+            var isSent = await _emailService.SendEmailAsync(email, "Email Verification", "verification code", verificationCode);
             if (!isSent)
-                return false;
+                return Result<bool>.Fail("Failed to send verification email.");
+
             var pendingVerification = new PendingVerification
             {
                 Email = email,
@@ -163,8 +159,10 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
             };
             await _unitOfWork.PendingVerifications.AddAsync(pendingVerification);
             await _unitOfWork.CompleteAsync();
-            return true;
+
+            return Result<bool>.Ok(true);
         }
+
         public async Task<bool> ConfirmEmailAsync(string verificationCode)
         {
             try
@@ -264,32 +262,26 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
             }
         }
 
-        public async Task<bool> ChangePasswordAsync(ChangePasswordRequestDto request)
+        public async Task<Result<bool>> ChangePasswordAsync(ChangePasswordRequestDto request)
         {
+            var user = await _unitOfWork.Users.GetByIdAsync(request.Id);
+            if (user == null)
+                return Result<bool>.Fail("User not found");
 
-            try
-            {
-                var user = await _unitOfWork.Users.GetByIdAsync(request.Id);
-                if (user == null)
-                    return false;
+            var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.OldPassword);
+            if (result == PasswordVerificationResult.Failed)
+                return Result<bool>.Fail("Current password is invalid");
 
-                var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.OldPassword);
-                if (result == PasswordVerificationResult.Failed)
-                    throw new Exception("Current password is invalid");
+            if (string.IsNullOrEmpty(request.NewPassword))
+                return Result<bool>.Fail("New password is invalid");
 
-                if (string.IsNullOrEmpty(request.NewPassword))
-                    throw new Exception("New Password is invalid");
+            user.PasswordHash = _passwordHasher.HashPassword(user, request.NewPassword);
+            await _unitOfWork.Users.UpdateAsync(user);
+            await _unitOfWork.CompleteAsync();
 
-                user.PasswordHash = _passwordHasher.HashPassword(user, request.NewPassword);
-                await _unitOfWork.Users.UpdateAsync(user);
-                await _unitOfWork.CompleteAsync();
-                return true;
-            }
-            catch
-            {
-                throw new Exception("Change Password Failed");
-            }
+            return Result<bool>.Ok(true);
         }
+
 
         public async Task<RefreshTokenResponseDto> RefreshTokenAsync(RefreshTokenRequestDto request)
         {
