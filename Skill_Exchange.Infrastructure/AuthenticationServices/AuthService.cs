@@ -36,46 +36,61 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
         // ================================
         public async Task<Result<bool>> StartRegisterAsync(string email)
         {
-            // Check if user already exists
+            // 1. Check if user already exists
             var user = await _unitOfWork.Users.GetByEmailAsync(email);
             if (user != null)
                 return Result<bool>.Fail("User already exists");
 
-            // Generate verification code
-            var randomBytes = new byte[64];
-            using var rng = RandomNumberGenerator.Create();
-            rng.GetBytes(randomBytes);
-            string verificationCode = Convert.ToBase64String(randomBytes);
+            // 2. Generate secure verification code
+            string verificationCode = GenerateVerificationCode();
 
-            // If a pending verification exists → update it
+            // 3. Get or create pending verification
             var pending = await _unitOfWork.PendingVerifications.GetByEmailAsync(email);
-            if (pending != null)
+            if (pending == null)
             {
-                pending.VerificationCode = verificationCode;
-                pending.Expiry = DateTime.UtcNow.AddMinutes(30);
-                await _unitOfWork.PendingVerifications.UpdateAsync(pending);
-                await _unitOfWork.CompleteAsync();
-
-                var sent = await _emailService.SendEmailAsync(email, "Email Verification", "verification code", verificationCode);
-                return sent ? Result<bool>.Ok(true) : Result<bool>.Fail("Failed to send verification email.");
+                pending = new PendingVerification
+                {
+                    Email = email,
+                    IsConfirmed = false
+                };
+                await _unitOfWork.PendingVerifications.AddAsync(pending);
             }
 
-            // Otherwise create new pending verification
-            var isSent = await _emailService.SendEmailAsync(email, "Email Verification", "verification code", verificationCode);
-            if (!isSent)
-                return Result<bool>.Fail("Failed to send verification email.");
+            // Always refresh code + expiry
+            pending.VerificationCode = verificationCode;
+            pending.Expiry = DateTime.UtcNow.AddMinutes(30);
 
-            var pendingVerification = new PendingVerification
-            {
-                Email = email,
-                VerificationCode = verificationCode,
-                Expiry = DateTime.UtcNow.AddMinutes(30),
-                IsConfirmed = false
-            };
-            await _unitOfWork.PendingVerifications.AddAsync(pendingVerification);
+            await _unitOfWork.PendingVerifications.UpdateAsync(pending);
             await _unitOfWork.CompleteAsync();
 
-            return Result<bool>.Ok(true);
+            // 4. Build email body
+            var emailBody = $@"
+                    <div style='font-family:Arial, sans-serif; max-width:600px; margin:auto;'>
+                        <h2 style='color:#2c3e50;'>Welcome to Skill Exchange!</h2>
+                        <p>Hi,</p>
+                        <p>To complete your registration, please use the verification code below:</p>
+                        <div style='background:#f4f4f4; padding:15px; text-align:center; border-radius:8px;'>
+                            <h3 style='color:#3498db; font-size:20px; letter-spacing:2px;'>{verificationCode}</h3>
+                        </div>
+                        <p style='margin-top:20px;'>This code will expire in <strong>30 minutes</strong>.</p>
+                        <p>If you did not request this, please ignore this email.</p>
+                        <br/>
+                        <p style='color:#888;'>Thanks,<br/>The Skill Exchange Team</p>
+                    </div>
+                ";
+
+            // 5. Send email
+            var sent = await _emailService.SendEmailAsync(
+                email,
+                "Skill Exchange - Email Verification",
+                emailBody,
+                verificationCode 
+            );
+
+            // 6. Return result
+            return sent
+                ? Result<bool>.Ok(true)
+                : Result<bool>.Fail("Failed to send verification email.");
         }
 
         public async Task<bool> ConfirmEmailAsync(string verificationCode)
@@ -214,8 +229,33 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
             var Id = user.Id;
             var link = $"https://yourfrontend.com/reset-password?token={Id}";
 
-            var is_sent = await _emailService.SendEmailAsync(email, "Reset Password", "click here : ", link);
-            return is_sent;
+            // 5. HTML Email Body
+            var emailBody = $@"
+                    <div style='font-family:Arial,sans-serif; max-width:600px; margin:auto;'>
+                        <h2 style='color:#2c3e50;'>Reset Your Password</h2>
+                        <p>Hello,</p>
+                        <p>We received a request to reset your password. Click the button below to continue:</p>
+                        <div style='text-align:center; margin:20px 0;'>
+                            <a href='{link}' style='background:#3498db; color:white; padding:12px 20px; text-decoration:none; border-radius:5px;'>
+                                Reset Password
+                            </a>
+                        </div>
+                        <p>This link will expire in <strong>30 minutes</strong>.</p>
+                        <p>If you didn’t request this, please ignore this email.</p>
+                        <br/>
+                        <p style='color:#888;'>Thanks,<br/>The Skill Exchange Team</p>
+                    </div>
+                ";
+
+            // 6. Send Email
+            var isSent = await _emailService.SendEmailAsync(
+                email,
+                "Skill Exchange - Password Reset",
+                emailBody,
+                link // fallback plain link
+            );
+
+            return isSent;
         }
 
         public async Task<bool> ResetPasswordAsync(ResetPasswordRequestDto request)
@@ -331,5 +371,21 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
             rng.GetBytes(randomBytes);
             return Convert.ToBase64String(randomBytes);
         }
+        private string GenerateVerificationCode(int length = 6)
+        {
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            var code = new char[length];
+            using var rng = RandomNumberGenerator.Create();
+            var bytes = new byte[length];
+
+            rng.GetBytes(bytes);
+            for (int i = 0; i < length; i++)
+            {
+                code[i] = chars[bytes[i] % chars.Length];
+            }
+
+            return new string(code);
+        }
+
     }
 }
