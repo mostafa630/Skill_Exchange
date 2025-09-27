@@ -65,19 +65,23 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
 
             // 4. Build email body
             var emailBody = $@"
-                    <div style='font-family:Arial, sans-serif; max-width:600px; margin:auto;'>
-                        <h2 style='color:#2c3e50;'>Welcome to Skill Exchange!</h2>
-                        <p>Hi,</p>
-                        <p>To complete your registration, please use the verification code below:</p>
-                        <div style='background:#f4f4f4; padding:15px; text-align:center; border-radius:8px;'>
-                            <h3 style='color:#3498db; font-size:20px; letter-spacing:2px;'>{verificationCode}</h3>
-                        </div>
-                        <p style='margin-top:20px;'>This code will expire in <strong>30 minutes</strong>.</p>
-                        <p>If you did not request this, please ignore this email.</p>
-                        <br/>
-                        <p style='color:#888;'>Thanks,<br/>The Skill Exchange Team</p>
-                    </div>
-                ";
+<div style='font-family:Arial, sans-serif; max-width:600px; margin:auto; background:#f8f9fa; padding:30px; border-radius:10px;'>
+    <div style='text-align:center; margin-bottom:20px;'>
+        <img src='https://yourcdn.com/logo.png' alt='Skill Exchange' style='width:120px;'>
+    </div>
+    <h2 style='color:#2c3e50; text-align:center;'>Welcome to Skill Exchange!</h2>
+    <p style='color:#555;'>Hi there,</p>
+    <p style='color:#555;'>To complete your registration, please use the verification code below:</p>
+    <div style='background:#3498db; padding:20px; text-align:center; border-radius:8px; margin:20px 0;'>
+        <span style='color:#fff; font-size:24px; font-weight:bold; letter-spacing:3px;'>{verificationCode}</span>
+    </div>
+    <p style='color:#555;'>This code will expire in <strong>30 minutes</strong>.</p>
+    <p style='color:#888; font-size:12px;'>If you did not request this, please ignore this email.</p>
+    <hr style='border:none; border-top:1px solid #eee; margin:20px 0;'/>
+    <p style='color:#888; font-size:12px; text-align:center;'>Thanks,<br/>The Skill Exchange Team</p>
+</div>
+";
+
 
             // 5. Send email
             var sent = await _emailService.SendEmailAsync(
@@ -231,21 +235,25 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
 
             // 5. HTML Email Body
             var emailBody = $@"
-                    <div style='font-family:Arial,sans-serif; max-width:600px; margin:auto;'>
-                        <h2 style='color:#2c3e50;'>Reset Your Password</h2>
-                        <p>Hello,</p>
-                        <p>We received a request to reset your password. Click the button below to continue:</p>
-                        <div style='text-align:center; margin:20px 0;'>
-                            <a href='{link}' style='background:#3498db; color:white; padding:12px 20px; text-decoration:none; border-radius:5px;'>
-                                Reset Password
-                            </a>
-                        </div>
-                        <p>This link will expire in <strong>30 minutes</strong>.</p>
-                        <p>If you didn’t request this, please ignore this email.</p>
-                        <br/>
-                        <p style='color:#888;'>Thanks,<br/>The Skill Exchange Team</p>
-                    </div>
-                ";
+<div style='font-family:Arial, sans-serif; max-width:600px; margin:auto; background:#f8f9fa; padding:30px; border-radius:10px;'>
+    <div style='text-align:center; margin-bottom:20px;'>
+        <img src='https://yourcdn.com/logo.png' alt='Skill Exchange' style='width:120px;'>
+    </div>
+    <h2 style='color:#2c3e50; text-align:center;'>Reset Your Password</h2>
+    <p style='color:#555;'>Hello,</p>
+    <p style='color:#555;'>We received a request to reset your password. Click the button below to continue:</p>
+    <div style='text-align:center; margin:30px 0;'>
+        <a href='{link}' style='background:#3498db; color:white; padding:14px 28px; text-decoration:none; font-weight:bold; border-radius:6px; display:inline-block;'>
+            Reset Password
+        </a>
+    </div>
+    <p style='color:#555;'>This link will expire in <strong>30 minutes</strong>.</p>
+    <p style='color:#888; font-size:12px;'>If you didn’t request this, please ignore this email.</p>
+    <hr style='border:none; border-top:1px solid #eee; margin:20px 0;'/>
+    <p style='color:#888; font-size:12px; text-align:center;'>Thanks,<br/>The Skill Exchange Team</p>
+</div>
+";
+
 
             // 6. Send Email
             var isSent = await _emailService.SendEmailAsync(

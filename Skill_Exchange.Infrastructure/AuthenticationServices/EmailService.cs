@@ -1,6 +1,7 @@
 using Skill_Exchange.Application.Interfaces;
 using MailKit.Net.Smtp;
 using MimeKit;
+
 namespace Skill_Exchange.Infrastructure.AuthenticationServices
 {
     public class EmailService : IEmailService
@@ -10,23 +11,27 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
         {
             _smtpSetting = smtpSettings;
         }
-        public async Task<bool> SendEmailAsync(string email, string subject, string messagge, string content)
+
+        public async Task<bool> SendEmailAsync(string email, string subject, string htmlContent, string plainTextContent)
         {
             try
             {
-                var message = new MimeMessage();
-                message.From.Add(new MailboxAddress(_smtpSetting.SenderName, _smtpSetting.Username));
-                message.To.Add(MailboxAddress.Parse(email));
-                message.Subject = $"{subject}";
-                message.Body = new TextPart("html")
+                var mimeMessage = new MimeMessage();
+                mimeMessage.From.Add(new MailboxAddress(_smtpSetting.SenderName, _smtpSetting.Username));
+                mimeMessage.To.Add(MailboxAddress.Parse(email));
+                mimeMessage.Subject = subject;
+
+                var bodyBuilder = new BodyBuilder
                 {
-                    Text = $"<p>{message} : {content}</p>"
+                    HtmlBody = htmlContent,
+                    TextBody = plainTextContent
                 };
+                mimeMessage.Body = bodyBuilder.ToMessageBody();
 
                 using var client = new SmtpClient();
                 await client.ConnectAsync(_smtpSetting.Host, _smtpSetting.Port, MailKit.Security.SecureSocketOptions.StartTls);
                 await client.AuthenticateAsync(_smtpSetting.SenderEmail, _smtpSetting.Password);
-                await client.SendAsync(message);
+                await client.SendAsync(mimeMessage);
                 await client.DisconnectAsync(true);
 
                 return true; // success
@@ -36,6 +41,5 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
                 return false; // failed
             }
         }
-
     }
 }
