@@ -13,7 +13,9 @@ namespace Skill_Exchange.API
     {
         public static IServiceCollection AddMediatorHandlers(this IServiceCollection services)
         {
-            services.AddUserHandlers().AddSkillHandlers();
+            services
+            .AddUserHandlers()
+            .AddSkillHandlers();
             return services;
         }
         public static IServiceCollection AddUserHandlers(this IServiceCollection services)
@@ -30,6 +32,6 @@ namespace Skill_Exchange.API
             //TODO
             return services;
         }
-        
+
     }
 }
