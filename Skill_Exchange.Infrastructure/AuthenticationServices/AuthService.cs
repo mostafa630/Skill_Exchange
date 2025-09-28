@@ -39,7 +39,7 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
         public async Task<Result<bool>> StartRegisterAsync(string email)
         {
             // 1. Check if user already exists
-            var user = await _unitOfWork.Users.GetByEmailAsync(email);
+            var user = await _userManager.FindByEmailAsync(email);
             if (user != null)
                 return Result<bool>.Fail("User already exists");
 
@@ -139,11 +139,12 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
             if (!result.Succeeded)
                 return new RegisterResponseDto { Message = "Regsiteration Failed!" };
 
+            await _userManager.AddToRoleAsync(user, "User");
+
             // Remove pending verification and save
             await _unitOfWork.PendingVerifications.DeleteAsync(PendingVerification);
             await _unitOfWork.CompleteAsync();
 
-            await _userManager.AddToRoleAsync(user, "User");
 
             return new RegisterResponseDto { Message = "Registeration succeded!" };
         }
@@ -195,21 +196,27 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
             // Validate Google token
             var payload = await GoogleJsonWebSignature.ValidateAsync(request.IdToken);
 
-            // Create new user from Google payload
+            // Create new user from Google payload  
+            System.Console.WriteLine($"payload = {payload.Email}");
+            System.Console.WriteLine($"email = {request.Email}");
             var newUser = new AppUser
             {
                 FirstName = payload.GivenName,
                 LastName = payload.FamilyName,
                 Email = payload.Email,
-                EmailConfirmed = true
+                EmailConfirmed = true,
+                UserName = request.Email
             };
-            newUser.UserName = payload.Email;
 
-            var result = await _userManager.CreateAsync(newUser);
-            if (!result.Succeeded)
+            var res = await _unitOfWork.Users.AddAsync(newUser);
+            //var result = await _userManager.CreateAsync(newUser);
+
+            // System.Console.WriteLine($"res = {result}");
+            if (!res)
                 return new RegisterResponseDto { Message = "Regsiteration Failed!" };
+            await _unitOfWork.CompleteAsync();
 
-            await _userManager.AddToRoleAsync(newUser, "User");
+            //await _userManager.AddToRoleAsync(newUser, "User");
             return new RegisterResponseDto { Message = "Registeration succeded!" };
         }
 
