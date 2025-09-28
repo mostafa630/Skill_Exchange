@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Skill_Exchange.Domain.Interfaces;
 using Skill_Exchange.Infrastructure.Peresistence;
 
@@ -8,6 +9,7 @@ namespace Skill_Exchange.Infrastructure
     {
         protected readonly AppDbContext _context;
         protected DbSet<T> _dbSet;
+
 
         public GenericRepository(AppDbContext context)
         {

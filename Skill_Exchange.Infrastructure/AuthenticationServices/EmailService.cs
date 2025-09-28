@@ -36,7 +36,7 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
 
                 return true; // success
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return false; // failed
             }
