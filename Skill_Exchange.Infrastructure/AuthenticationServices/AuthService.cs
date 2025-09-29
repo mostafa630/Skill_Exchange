@@ -208,15 +208,14 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
                 UserName = request.Email
             };
 
-            var res = await _unitOfWork.Users.AddAsync(newUser);
-            //var result = await _userManager.CreateAsync(newUser);
+            var result = await _userManager.CreateAsync(newUser);
 
             // System.Console.WriteLine($"res = {result}");
-            if (!res)
+            if (!result.Succeeded)
                 return new RegisterResponseDto { Message = "Regsiteration Failed!" };
-            await _unitOfWork.CompleteAsync();
 
-            //await _userManager.AddToRoleAsync(newUser, "User");
+            await _userManager.AddToRoleAsync(newUser, "User");
+
             return new RegisterResponseDto { Message = "Registeration succeded!" };
         }
 
