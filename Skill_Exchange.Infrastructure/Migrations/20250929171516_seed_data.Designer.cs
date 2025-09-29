@@ -12,8 +12,8 @@ using Skill_Exchange.Infrastructure.Peresistence;
 namespace Skill_Exchange.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250909222846_Seed_data2")]
-    partial class Seed_data2
+    [Migration("20250929171516_seed_data")]
+    partial class seed_data
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -240,7 +240,6 @@ namespace Skill_Exchange.Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PhoneNumber")
-                        .IsRequired()
                         .HasMaxLength(32)
                         .HasColumnType("nvarchar(32)");
 
@@ -250,6 +249,12 @@ namespace Skill_Exchange.Infrastructure.Migrations
                     b.Property<string>("ProfileImageUrl")
                         .HasMaxLength(512)
                         .HasColumnType("nvarchar(512)");
+
+                    b.Property<string>("RefreshToken")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("RefreshTokenExpiryTime")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
@@ -278,7 +283,8 @@ namespace Skill_Exchange.Infrastructure.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.HasIndex("PhoneNumber")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[PhoneNumber] IS NOT NULL");
 
                     b.HasIndex("FirstName", "LastName");
 
@@ -290,20 +296,20 @@ namespace Skill_Exchange.Infrastructure.Migrations
                             Id = new Guid("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
                             AccessFailedCount = 0,
                             Bio = "Seeded Admin user",
-                            ConcurrencyStamp = "7cb3b1c9-50b4-4e2e-9951-5dc1e79caa6d",
+                            ConcurrencyStamp = "93feb779-4fdb-4b95-8699-fcc50f4978d9",
                             DateOfBirth = new DateTime(2000, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Email = "faragelyan722@gmail.com",
                             EmailConfirmed = false,
                             FirstName = "Farag",
-                            LastActiveAt = new DateTime(2025, 9, 9, 22, 28, 44, 664, DateTimeKind.Utc).AddTicks(5369),
+                            LastActiveAt = new DateTime(2025, 9, 29, 17, 15, 15, 466, DateTimeKind.Utc).AddTicks(2669),
                             LastName = "Elyan",
                             LockoutEnabled = false,
                             NormalizedEmail = "FARAGELYAN722@GMAIL.COM",
                             NormalizedUserName = "FARAG.ELYAN",
-                            PasswordHash = "AQAAAAIAAYagAAAAEGEo1aS/8P2B7Yvhool5fsBbtOx5/ljBBZqDxEIHpElChiB/MqyPOLR0amf85rqP6Q==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEKv/3aiT7bnFPLmOaO6GIC56ZdHnRs0nFEcFf/PAMxIJErCg/Jzi7zXLZ8w2k7x2uw==",
                             PhoneNumber = "0100000001",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "0451a3f8-6273-4dc4-912b-21529a6f2526",
+                            SecurityStamp = "5f2d841c-e983-4583-af86-90b1aab79030",
                             TwoFactorEnabled = false,
                             UserName = "farag.elyan"
                         },
@@ -312,20 +318,20 @@ namespace Skill_Exchange.Infrastructure.Migrations
                             Id = new Guid("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
                             AccessFailedCount = 0,
                             Bio = "Seeded normal user",
-                            ConcurrencyStamp = "8e3283c4-9750-4127-aeaa-1603df90e6c1",
+                            ConcurrencyStamp = "12c3665f-e9e4-4c40-bcd1-a3a938cc0e8a",
                             DateOfBirth = new DateTime(2001, 2, 2, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Email = "faragelyan76@gmail.com",
                             EmailConfirmed = false,
                             FirstName = "Test",
-                            LastActiveAt = new DateTime(2025, 9, 9, 22, 28, 44, 781, DateTimeKind.Utc).AddTicks(6065),
+                            LastActiveAt = new DateTime(2025, 9, 29, 17, 15, 15, 554, DateTimeKind.Utc).AddTicks(2579),
                             LastName = "User",
                             LockoutEnabled = false,
                             NormalizedEmail = "FARAGELYAN76@GMAIL.COM",
                             NormalizedUserName = "TEST.USER",
-                            PasswordHash = "AQAAAAIAAYagAAAAEEKRBOUfKmeYdXc5FooggUtXH+2lI4lNiVS5ttj2yrZQjtZxuxmWH9NgVcqYHiYDAg==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEOeaI4mWW4w5pOdhhHPFbkT8qdoT7cMlf8vFTx1gkLmcJgw8BeA7g3PxHl/FYo5ZZw==",
                             PhoneNumber = "0100000002",
                             PhoneNumberConfirmed = false,
-                            SecurityStamp = "e3a61a22-1b6a-4982-96bc-33ee935e2c3a",
+                            SecurityStamp = "ec33df1b-8368-4279-99dd-05ae19e79bb1",
                             TwoFactorEnabled = false,
                             UserName = "test.user"
                         });
@@ -388,6 +394,35 @@ namespace Skill_Exchange.Infrastructure.Migrations
                     b.HasIndex("Title");
 
                     b.ToTable("Notifications");
+                });
+
+            modelBuilder.Entity("Skill_Exchange.Domain.Entities.PendingVerification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Expiry")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsConfirmed")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("VerificationCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PendingVerifications", (string)null);
                 });
 
             modelBuilder.Entity("Skill_Exchange.Domain.Entities.RatingAndFeedback", b =>

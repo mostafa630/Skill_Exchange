@@ -99,25 +99,33 @@ namespace Skill_Exchange.Infrastructure.AuthenticationServices
                 : Result<bool>.Fail("Failed to send verification email.");
         }
 
-        public async Task<bool> ConfirmEmailAsync(string verificationCode)
+        public async Task<Result<bool>> ConfirmEmailAsync(ConfirmEmailRequestDto confirmEmailRequestDto)
         {
             try
             {
-                var pendingVerification = await _unitOfWork.PendingVerifications.GetByVerificationCodeAsync(verificationCode);
-                if (pendingVerification == null || pendingVerification.Expiry < DateTime.UtcNow)
-                    return false;
+                var pendingVerification = await _unitOfWork.PendingVerifications
+                    .GetByVerificationCodeAsync(confirmEmailRequestDto.VerificationCode);
+
+                if (pendingVerification == null || pendingVerification.Email != confirmEmailRequestDto.Email)
+                    return Result<bool>.Fail("Invalid verification code or email mismatch.");
+
+                if (pendingVerification.Expiry < DateTime.UtcNow)
+                    return Result<bool>.Fail("Verification code has expired.");
 
                 // Mark as confirmed
                 pendingVerification.IsConfirmed = true;
                 await _unitOfWork.PendingVerifications.UpdateAsync(pendingVerification);
                 await _unitOfWork.CompleteAsync();
-                return true;
+
+                return Result<bool>.Ok(true);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return false;
+                // You can log ex here if needed
+                return Result<bool>.Fail("An unexpected error occurred: " + ex.Message);
             }
         }
+
 
         public async Task<RegisterResponseDto> CompleteRegisterAsync(CreateUserDTO createRequestDTO)
         {

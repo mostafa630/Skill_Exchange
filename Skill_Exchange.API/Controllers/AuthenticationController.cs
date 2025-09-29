@@ -36,10 +36,12 @@ namespace Skill_Exchange.API.Controllers
             if (string.IsNullOrEmpty(request.VerificationCode))
                 return BadRequest(new { message = "Verification code is required." });
 
-            var result = await _authService.ConfirmEmailAsync(request.VerificationCode);
-            return result
-                ? Ok(new { message = "Email confirmed successfully." })
-                : BadRequest(new { message = "Invalid or expired verification code." });
+            var result = await _authService.ConfirmEmailAsync(request);
+
+            if (!result.Success)
+                return BadRequest(new { message = result.Error });
+
+            return Ok(new { message = "Email confirmed successfully." });
         }
 
         // Step 3: Complete Register (create account)

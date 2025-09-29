@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Skill_Exchange.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class Seed_data2 : Migration
+    public partial class seed_data : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -43,6 +43,22 @@ namespace Skill_Exchange.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "PendingVerifications",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    VerificationCode = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Expiry = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsConfirmed = table.Column<bool>(type: "bit", nullable: false, defaultValue: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PendingVerifications", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "SkillCategory",
                 columns: table => new
                 {
@@ -66,6 +82,8 @@ namespace Skill_Exchange.Infrastructure.Migrations
                     Bio = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
                     LastActiveAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ProfileImageUrl = table.Column<string>(type: "nvarchar(512)", maxLength: 512, nullable: true),
+                    RefreshToken = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    RefreshTokenExpiryTime = table.Column<DateTime>(type: "datetime2", nullable: true),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -74,7 +92,7 @@ namespace Skill_Exchange.Infrastructure.Migrations
                     PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     SecurityStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PhoneNumber = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: false),
+                    PhoneNumber = table.Column<string>(type: "nvarchar(32)", maxLength: 32, nullable: true),
                     PhoneNumberConfirmed = table.Column<bool>(type: "bit", nullable: false),
                     TwoFactorEnabled = table.Column<bool>(type: "bit", nullable: false),
                     LockoutEnd = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
@@ -375,11 +393,11 @@ namespace Skill_Exchange.Infrastructure.Migrations
 
             migrationBuilder.InsertData(
                 table: "Users",
-                columns: new[] { "Id", "AccessFailedCount", "Bio", "ConcurrencyStamp", "DateOfBirth", "Email", "EmailConfirmed", "FirstName", "LastActiveAt", "LastName", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "ProfileImageUrl", "SecurityStamp", "TwoFactorEnabled", "UserName" },
+                columns: new[] { "Id", "AccessFailedCount", "Bio", "ConcurrencyStamp", "DateOfBirth", "Email", "EmailConfirmed", "FirstName", "LastActiveAt", "LastName", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "ProfileImageUrl", "RefreshToken", "RefreshTokenExpiryTime", "SecurityStamp", "TwoFactorEnabled", "UserName" },
                 values: new object[,]
                 {
-                    { new Guid("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), 0, "Seeded Admin user", "7cb3b1c9-50b4-4e2e-9951-5dc1e79caa6d", new DateTime(2000, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "faragelyan722@gmail.com", false, "Farag", new DateTime(2025, 9, 9, 22, 28, 44, 664, DateTimeKind.Utc).AddTicks(5369), "Elyan", false, null, "FARAGELYAN722@GMAIL.COM", "FARAG.ELYAN", "AQAAAAIAAYagAAAAEGEo1aS/8P2B7Yvhool5fsBbtOx5/ljBBZqDxEIHpElChiB/MqyPOLR0amf85rqP6Q==", "0100000001", false, null, "0451a3f8-6273-4dc4-912b-21529a6f2526", false, "farag.elyan" },
-                    { new Guid("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"), 0, "Seeded normal user", "8e3283c4-9750-4127-aeaa-1603df90e6c1", new DateTime(2001, 2, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), "faragelyan76@gmail.com", false, "Test", new DateTime(2025, 9, 9, 22, 28, 44, 781, DateTimeKind.Utc).AddTicks(6065), "User", false, null, "FARAGELYAN76@GMAIL.COM", "TEST.USER", "AQAAAAIAAYagAAAAEEKRBOUfKmeYdXc5FooggUtXH+2lI4lNiVS5ttj2yrZQjtZxuxmWH9NgVcqYHiYDAg==", "0100000002", false, null, "e3a61a22-1b6a-4982-96bc-33ee935e2c3a", false, "test.user" }
+                    { new Guid("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"), 0, "Seeded Admin user", "93feb779-4fdb-4b95-8699-fcc50f4978d9", new DateTime(2000, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "faragelyan722@gmail.com", false, "Farag", new DateTime(2025, 9, 29, 17, 15, 15, 466, DateTimeKind.Utc).AddTicks(2669), "Elyan", false, null, "FARAGELYAN722@GMAIL.COM", "FARAG.ELYAN", "AQAAAAIAAYagAAAAEKv/3aiT7bnFPLmOaO6GIC56ZdHnRs0nFEcFf/PAMxIJErCg/Jzi7zXLZ8w2k7x2uw==", "0100000001", false, null, null, null, "5f2d841c-e983-4583-af86-90b1aab79030", false, "farag.elyan" },
+                    { new Guid("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"), 0, "Seeded normal user", "12c3665f-e9e4-4c40-bcd1-a3a938cc0e8a", new DateTime(2001, 2, 2, 0, 0, 0, 0, DateTimeKind.Unspecified), "faragelyan76@gmail.com", false, "Test", new DateTime(2025, 9, 29, 17, 15, 15, 554, DateTimeKind.Utc).AddTicks(2579), "User", false, null, "FARAGELYAN76@GMAIL.COM", "TEST.USER", "AQAAAAIAAYagAAAAEOeaI4mWW4w5pOdhhHPFbkT8qdoT7cMlf8vFTx1gkLmcJgw8BeA7g3PxHl/FYo5ZZw==", "0100000002", false, null, null, null, "ec33df1b-8368-4279-99dd-05ae19e79bb1", false, "test.user" }
                 });
 
             migrationBuilder.InsertData(
@@ -533,7 +551,8 @@ namespace Skill_Exchange.Infrastructure.Migrations
                 name: "IX_Users_PhoneNumber",
                 table: "Users",
                 column: "PhoneNumber",
-                unique: true);
+                unique: true,
+                filter: "[PhoneNumber] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "UserNameIndex",
@@ -579,6 +598,9 @@ namespace Skill_Exchange.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "Conversations");
+
+            migrationBuilder.DropTable(
+                name: "PendingVerifications");
 
             migrationBuilder.DropTable(
                 name: "RatingsAndFeedbacks");

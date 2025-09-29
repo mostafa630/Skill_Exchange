@@ -15,7 +15,7 @@ namespace Skill_Exchange.Application.Interfaces
         // Register & Login
         // -------------------------
         Task<Result<bool>> StartRegisterAsync(string emaiL);
-        Task<bool> ConfirmEmailAsync(string verificationCode);
+        Task<Result<bool>> ConfirmEmailAsync(ConfirmEmailRequestDto confirmEmailRequestDto);
         Task<RegisterResponseDto> CompleteRegisterAsync(CreateUserDTO request);
         Task<Result<LoginResponseDto>> LoginAsync(LoginRequestDto request);
         Task LogoutAsync(Guid userId);
