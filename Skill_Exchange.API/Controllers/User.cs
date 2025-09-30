@@ -1,7 +1,10 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Org.BouncyCastle.Crypto.Prng.Drbg;
 using Skill_Exchange.Application.DTOs.Auth;
+using Skill_Exchange.Application.DTOs.User;
 using Skill_Exchange.Application.Interfaces;
+using Skill_Exchange.Application.Services.User.Queries;
 
 namespace Skill_Exchange.API.Controllers
 {
@@ -9,6 +12,45 @@ namespace Skill_Exchange.API.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
+        private readonly IMediator _mediator;
 
+        public UserController(IMediator mediator)
+        {
+            _mediator = mediator;
+        }
+        [HttpGet("by_email/{email}")]
+        public async Task<ActionResult<UserDTO>> GetByEmail(string email)
+        {
+            if (String.IsNullOrEmpty(email))
+            {
+                return BadRequest("Invalid Email");
+            }
+            var query = new GetUserByEmail(email);
+            var response = await _mediator.Send(query);
+
+            return response.Success ? Ok(response.Data) : BadRequest(response.Error);
+        }
+
+        [HttpGet("by_Id/{Id}")]
+        public async Task<ActionResult<UserDTO>> GetById(string Id)
+        {
+            if (String.IsNullOrEmpty(Id))
+            {
+                return BadRequest("Invalid Id");
+            }
+            var query = new GetUserById(Id);
+            var response = await _mediator.Send(query);
+
+            return response.Success ? Ok(response.Data) : BadRequest(response.Error);
+        }
+
+        [HttpGet("all")]
+        public async Task<ActionResult<IEnumerable<UserDTO>>> GetAll()
+        {
+
+            var query = new GetAllUsers();
+            var response = await _mediator.Send(query);
+            return response.Success ? Ok(response.Data) : BadRequest(response.Error);
+        }
     }
 }
