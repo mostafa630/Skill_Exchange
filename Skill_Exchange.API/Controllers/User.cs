@@ -4,7 +4,9 @@ using Org.BouncyCastle.Crypto.Prng.Drbg;
 using Skill_Exchange.Application.DTOs.Auth;
 using Skill_Exchange.Application.DTOs.User;
 using Skill_Exchange.Application.Interfaces;
+using Skill_Exchange.Application.Services.GlobalQuery;
 using Skill_Exchange.Application.Services.User.Queries;
+using Skill_Exchange.Domain.Entities;
 
 namespace Skill_Exchange.API.Controllers
 {
@@ -47,10 +49,12 @@ namespace Skill_Exchange.API.Controllers
         [HttpGet("all")]
         public async Task<ActionResult<IEnumerable<UserDTO>>> GetAll()
         {
-
-            var query = new GetAllUsers();
+            var query = new GetAll<AppUser, UserDTO>();
             var response = await _mediator.Send(query);
-            return response.Success ? Ok(response.Data) : BadRequest(response.Error);
+            return Ok(response);
+            // var query = new GetAllUsers();
+            // var response = await _mediator.Send(query);
+            //return response.Success ? Ok(response.Data) : BadRequest(response.Error);
         }
     }
 }
