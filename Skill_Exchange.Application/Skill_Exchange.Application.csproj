@@ -25,4 +25,9 @@
     <ProjectReference Include="..\Skill_Exchange.Domain\Skill_Exchange.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Services\Skill\" />
+    <Folder Include="Services\SkillCategory\" />
+  </ItemGroup>
+
 </Project>
