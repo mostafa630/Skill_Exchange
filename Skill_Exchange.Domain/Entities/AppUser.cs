@@ -35,6 +35,5 @@ namespace Skill_Exchange.Domain.Entities
         public ICollection<AppUser> Friends { get; set; } = new List<AppUser>();
         public ICollection<AppUser> FriendOf { get; set; } = new List<AppUser>();
 
-
     }
 }
