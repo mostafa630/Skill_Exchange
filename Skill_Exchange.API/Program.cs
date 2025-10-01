@@ -40,7 +40,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
-Console.WriteLine("Mostafa Mahmoud Mostafa");
+Console.WriteLine("1st change");
 builder.Services.AddIdentity<AppUser, IdentityRole<Guid>>()
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
@@ -115,5 +115,5 @@ app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-Console.WriteLine("1st change");
+Console.WriteLine("Mostafa Mahmoud Mostafa");
 app.Run();
