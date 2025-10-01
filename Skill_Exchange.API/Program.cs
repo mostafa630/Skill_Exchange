@@ -115,5 +115,4 @@ app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-Console.WriteLine("I'm mostafa");
 app.Run();
