@@ -36,11 +36,11 @@ namespace Skill_Exchange.API.Controllers
         [HttpGet("by_Id/{Id}")]
         public async Task<ActionResult<UserDTO>> GetById(string Id)
         {
-            if (String.IsNullOrEmpty(Id))
+            if (String.IsNullOrEmpty(Id.ToString()) || !Guid.TryParse(Id, out _))
             {
                 return BadRequest("Invalid Id");
             }
-            var query = new GetUserById(Id);
+            var query = new GetById<AppUser, UserDTO>(Guid.Parse(Id));
             var response = await _mediator.Send(query);
 
             return response.Success ? Ok(response.Data) : BadRequest(response.Error);
