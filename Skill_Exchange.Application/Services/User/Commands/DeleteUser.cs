@@ -7,6 +7,6 @@ namespace Skill_Exchange.Application.Services.User.Commands
 {
     public class DeleteUser
     {
-        
+
     }
 }
