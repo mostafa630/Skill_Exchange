@@ -31,7 +31,7 @@ namespace Skill_Exchange.Application.Services.User.Queries.Handlers
                 {
                     return Result<UserDTO>.Fail("No user Exists");
                 }
-               
+                var userDto = _mapper.Map<UserDTO>(user);
                 return Result<UserDTO>.Ok(userDto);
             }
             catch

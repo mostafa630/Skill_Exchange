@@ -10,15 +10,17 @@ namespace Skill_Exchange.Application.FluentValidation.User
         {
             // FirstName: validate only if it's not null and not whitespace
             RuleFor(x => x.FirstName)
-                .MaximumLength(50).WithMessage("First name cannot exceed 50 characters.")
-                .Matches("^[a-zA-Z]+$").WithMessage("First name must contain only letters.")
-                .When(x => x.FirstName != null && !string.IsNullOrWhiteSpace(x.FirstName));
+            .NotEmpty().WithMessage("First name cannot be empty.")
+            .MaximumLength(50).WithMessage("First name cannot exceed 50 characters.")
+            .Matches("^[a-zA-Z]+$").WithMessage("First name must contain only letters.")
+            .When(x => x.FirstName != null);
 
             // LastName: validate only if it's not null and not whitespace
             RuleFor(x => x.LastName)
-                .MaximumLength(50).WithMessage("Last name cannot exceed 50 characters.")
-                .Matches("^[a-zA-Z]+$").WithMessage("Last name must contain only letters.")
-                .When(x => x.LastName != null && !string.IsNullOrWhiteSpace(x.LastName));
+            .NotEmpty().WithMessage("Last name cannot be empty.")
+            .MaximumLength(50).WithMessage("Last name cannot exceed 50 characters.")
+            .Matches("^[a-zA-Z]+$").WithMessage("Last name must contain only letters.")
+            .When(x => x.LastName != null);
 
             RuleFor(x => x.Email)
                .NotEmpty().WithMessage("Email is required.")
@@ -26,8 +28,10 @@ namespace Skill_Exchange.Application.FluentValidation.User
 
             // DateOfBirth: validate only if it has a value
             RuleFor(x => x.DateOfBirth)
-                .Must(BeAValidAge).WithMessage("User must be at least 13 years old.")
-                .When(x => x.DateOfBirth.HasValue);
+            .Must(BeAValidAge)
+            .WithMessage("User must be at least 13 years old.")
+            .When(x => x.DateOfBirth.HasValue);
+
         }
 
         private bool BeAValidAge(DateOnly? dateOfBirth)

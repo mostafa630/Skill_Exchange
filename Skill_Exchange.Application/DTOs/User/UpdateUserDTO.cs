@@ -7,10 +7,10 @@ namespace Skill_Exchange.Application.DTOs.User
 {
     public class UpdateUserDTO
     {
-        public readonly string Email;
-        public string? FirstName;
-        public string? LastName;
+        public string Email { get; set; }
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
 
-        public DateOnly? DateOfBirth { get; set; }
+        public DateOnly? DateOfBirth { get; set; } = null;
     }
 }
