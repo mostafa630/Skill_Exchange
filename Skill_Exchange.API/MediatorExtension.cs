@@ -20,11 +20,9 @@ namespace Skill_Exchange.API
         }
         public static IServiceCollection AddUserHandlers(this IServiceCollection services)
         {
-            services.AddTransient<IRequestHandler<GetAll<AppUser, UserDTO>, IEnumerable<UserDTO>>, GetAllHandler<AppUser, UserDTO>>();
-            services.AddTransient<IRequestHandler<GetById<AppUser, UserDTO>, UserDTO>, GetByIdHandler<AppUser, UserDTO>>();
+            services.AddTransient<IRequestHandler<GetAll<AppUser, UserDTO>, Result<IEnumerable<UserDTO>>>, GetAllHandler<AppUser, UserDTO>>();
+            services.AddTransient<IRequestHandler<GetById<AppUser, UserDTO>, Result<UserDTO>>, GetByIdHandler<AppUser, UserDTO>>();
             services.AddTransient<IRequestHandler<Add<AppUser, CreateUserDTO, CreateUserResponseDTO>, CreateUserResponseDTO>, AddHandler<AppUser, CreateUserDTO, CreateUserResponseDTO>>();
-
-
             return services;
         }
         public static IServiceCollection AddSkillHandlers(this IServiceCollection services)

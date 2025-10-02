@@ -4,7 +4,9 @@ using Org.BouncyCastle.Crypto.Prng.Drbg;
 using Skill_Exchange.Application.DTOs.Auth;
 using Skill_Exchange.Application.DTOs.User;
 using Skill_Exchange.Application.Interfaces;
+using Skill_Exchange.Application.Services.GlobalQuery;
 using Skill_Exchange.Application.Services.User.Queries;
+using Skill_Exchange.Domain.Entities;
 
 namespace Skill_Exchange.API.Controllers
 {
@@ -34,11 +36,11 @@ namespace Skill_Exchange.API.Controllers
         [HttpGet("by_Id/{Id}")]
         public async Task<ActionResult<UserDTO>> GetById(string Id)
         {
-            if (String.IsNullOrEmpty(Id))
+            if (String.IsNullOrEmpty(Id.ToString()) || !Guid.TryParse(Id, out _))
             {
                 return BadRequest("Invalid Id");
             }
-            var query = new GetUserById(Id);
+            var query = new GetById<AppUser, UserDTO>(Guid.Parse(Id));
             var response = await _mediator.Send(query);
 
             return response.Success ? Ok(response.Data) : BadRequest(response.Error);
@@ -47,8 +49,7 @@ namespace Skill_Exchange.API.Controllers
         [HttpGet("all")]
         public async Task<ActionResult<IEnumerable<UserDTO>>> GetAll()
         {
-
-            var query = new GetAllUsers();
+            var query = new GetAll<AppUser, UserDTO>();
             var response = await _mediator.Send(query);
             return response.Success ? Ok(response.Data) : BadRequest(response.Error);
         }

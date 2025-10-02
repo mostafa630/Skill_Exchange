@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using MediatR;
+using Skill_Exchange.Application.DTOs;
 using Skill_Exchange.Domain.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Skill_Exchange.Application.Services.GlobalQuery.Handlers
 {
-    public class GetByIdHandler<T, TDTO> : IRequestHandler<GetById<T, TDTO>, TDTO>
+    public class GetByIdHandler<T, TDTO> : IRequestHandler<GetById<T, TDTO>, Result<TDTO>>
         where T : class
         where TDTO : class
     {
@@ -22,11 +23,22 @@ namespace Skill_Exchange.Application.Services.GlobalQuery.Handlers
             _mapper = mapper;
         }
 
-        public async Task<TDTO> Handle(GetById<T, TDTO> request, CancellationToken cancellationToken)
+        public async Task<Result<TDTO>> Handle(GetById<T, TDTO> request, CancellationToken cancellationToken)
         {
-            var entity = await _unitOfWork.GetRepository<T>().GetByIdAsync(request.Id);
-            var entityDto = _mapper.Map<TDTO>(entity);
-            return entityDto;
+            try
+            {
+                var entity = await _unitOfWork.GetRepository<T>().GetByIdAsync(request.Id);
+                if (entity == null)
+                {
+                    return Result<TDTO>.Fail("No Entery Exists");
+                }
+                var entityDto = _mapper.Map<TDTO>(entity);
+                return Result<TDTO>.Ok(entityDto);
+            }
+            catch
+            {
+                return Result<TDTO>.Fail("Operation Failed");
+            }
         }
     }
 }
