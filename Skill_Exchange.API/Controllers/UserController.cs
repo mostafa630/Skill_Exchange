@@ -5,6 +5,7 @@ using Skill_Exchange.Application.DTOs.Auth;
 using Skill_Exchange.Application.DTOs.User;
 using Skill_Exchange.Application.Interfaces;
 using Skill_Exchange.Application.Services.GlobalQuery;
+using Skill_Exchange.Application.Services.User.Commands;
 using Skill_Exchange.Application.Services.User.Queries;
 using Skill_Exchange.Domain.Entities;
 
@@ -21,6 +22,10 @@ namespace Skill_Exchange.API.Controllers
             _mediator = mediator;
         }
         [HttpGet("by_email/{email}")]
+
+        //-------------------------------------------------------------------------//
+        //                            Get Endpoints                                //
+        //-------------------------------------------------------------------------//
         public async Task<ActionResult<UserDTO>> GetByEmail(string email)
         {
             if (String.IsNullOrEmpty(email))
@@ -56,5 +61,17 @@ namespace Skill_Exchange.API.Controllers
             // var response = await _mediator.Send(query);
             //return response.Success ? Ok(response.Data) : BadRequest(response.Error);
         }
+
+        //-------------------------------------------------------------------------//
+        //                            Post Endpoints                               //
+        //-------------------------------------------------------------------------//
+        [HttpPost("update")]
+        public async Task<ActionResult<UserDTO>> Update(UpdateUserDTO updateUserDTO)
+        {
+            var command = new UpdateUser(updateUserDTO);
+            var response = await _mediator.Send(command);
+            return response.Success ? Ok(response.Data) : BadRequest(response.Error);
+        }
     }
+
 }
