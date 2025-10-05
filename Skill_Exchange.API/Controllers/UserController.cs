@@ -69,6 +69,24 @@ namespace Skill_Exchange.API.Controllers
             var response = await _mediator.Send(command);
             return response.Success ? Ok(response.Data) : BadRequest(response.Error);
         }
+
+        //-------------------------------------------------------------------------//
+        //                            Delete Endpoints                             //
+        //-------------------------------------------------------------------------//
+        [HttpDelete("delete/{email}")]
+        public async Task<ActionResult<bool>> Delete(string email)
+        {
+            if (String.IsNullOrEmpty(email))
+            {
+                return BadRequest("Invalid Email");
+            }
+            var command = new DelteUser(email);
+            var response = await _mediator.Send(command);
+            return response.Success ? Ok(response.Data) : BadRequest(response.Error);
+        }
+
     }
+
+
 
 }
