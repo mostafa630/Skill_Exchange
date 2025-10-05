@@ -27,7 +27,6 @@
 
   <ItemGroup>
     <Folder Include="Services\Skill\" />
-    <Folder Include="Services\SkillCategory\" />
   </ItemGroup>
 
 </Project>

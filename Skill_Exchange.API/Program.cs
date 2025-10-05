@@ -62,6 +62,7 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 // ---------------------- AutoMapper ---------------------
 builder.Services.AddAutoMapper(typeof(Skill_Exchange.Application.Mapping.UserProfile).Assembly);
 
+
 // ---------------------- MediatR -------------------------
 builder.Services.AddMediatR(cfg =>
 {
