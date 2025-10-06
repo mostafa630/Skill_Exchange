@@ -7,6 +7,7 @@ using Skill_Exchange.Application.Interfaces;
 using Skill_Exchange.Application.Services.GlobalQuery;
 using Skill_Exchange.Application.Services.User.Commands;
 using Skill_Exchange.Application.Services.User.Queries;
+using Skill_Exchange.Application.Specifications;
 using Skill_Exchange.Domain.Entities;
 
 namespace Skill_Exchange.API.Controllers
@@ -51,10 +52,12 @@ namespace Skill_Exchange.API.Controllers
             return response.Success ? Ok(response.Data) : BadRequest(response.Error);
         }
 
+
         [HttpGet("all")]
-        public async Task<ActionResult<IEnumerable<UserDTO>>> GetAll()
+        public async Task<ActionResult<IEnumerable<UserDTO>>> GetAll([FromQuery] UserFilterDTO userFilterDTO)
         {
-            var query = new GetAll<AppUser, UserDTO>();
+            var userSpec = UserSpecification.Build(userFilterDTO);
+            var query = new GetAll<AppUser, UserDTO>(userSpec);
             var response = await _mediator.Send(query);
             return Ok(response);
             // var query = new GetAllUsers();
@@ -72,6 +75,24 @@ namespace Skill_Exchange.API.Controllers
             var response = await _mediator.Send(command);
             return response.Success ? Ok(response.Data) : BadRequest(response.Error);
         }
+
+        //-------------------------------------------------------------------------//
+        //                            Delete Endpoints                             //
+        //-------------------------------------------------------------------------//
+        [HttpDelete("delete/{email}")]
+        public async Task<ActionResult<bool>> Delete(string email)
+        {
+            if (String.IsNullOrEmpty(email))
+            {
+                return BadRequest("Invalid Email");
+            }
+            var command = new DelteUser(email);
+            var response = await _mediator.Send(command);
+            return response.Success ? Ok(response.Data) : BadRequest(response.Error);
+        }
+
     }
+
+
 
 }
