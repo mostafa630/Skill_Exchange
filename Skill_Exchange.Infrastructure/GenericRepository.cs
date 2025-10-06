@@ -49,7 +49,10 @@ namespace Skill_Exchange.Infrastructure
         }
 
         public async Task<IEnumerable<T>> GetAllAsync(ISpecification<T> spec)
-        { 
+        {
+            if (spec is null)
+                return await GetAllAsync();
+
             var query = SpecificationEvaluator<T>.GetQuery(_dbSet.AsQueryable(), spec);
             return await query.ToListAsync();
         }

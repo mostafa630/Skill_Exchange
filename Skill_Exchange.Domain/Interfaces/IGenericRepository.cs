@@ -12,7 +12,7 @@
         Task<T> GetByIdAsync(Guid id);
         // Get all entities
         Task<IEnumerable<T>> GetAllAsync();
-        Task<IEnumerable<T>> GetAllAsync(ISpecification<T> spec);
+        Task<IEnumerable<T>> GetAllAsync(ISpecification<T>? spec);
 
 
     }

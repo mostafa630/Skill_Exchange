@@ -13,7 +13,7 @@ namespace Skill_Exchange.Application.Specifications
         {
 
         }
-        public static UserSpecification BuildUserSpec(UserFilterDTO filter)
+        public static UserSpecification Build(UserFilterDTO filter)
         {
             var userSpec = new UserSpecification();
 

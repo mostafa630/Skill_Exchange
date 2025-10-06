@@ -26,7 +26,7 @@ namespace Skill_Exchange.Application.Services.GlobalQuery.Handlers
         {
             try
             {
-                var entities = await _unitOfWork.GetRepository<T>().GetAllAsync();
+                var entities = await _unitOfWork.GetRepository<T>().GetAllAsync(request.spec);
                 var entitiesDtos = _mapper.Map<IEnumerable<TDTO>>(entities);
                 return Result<IEnumerable<TDTO>>.Ok(entitiesDtos);
             }
