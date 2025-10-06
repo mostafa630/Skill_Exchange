@@ -23,7 +23,7 @@ namespace Skill_Exchange.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var result = await _mediator.Send(new GetAll<SkillCategory, SkillCategoryDTO>());
+            var result = await _mediator.Send(new GetAll<SkillCategory, SkillCategoryDTO>(null));
             if (!result.Success)
                 return BadRequest(result.Error);
 

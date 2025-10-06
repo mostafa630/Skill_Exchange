@@ -68,7 +68,7 @@ namespace Skill_Exchange.API.Controllers
         //-------------------------------------------------------------------------//
         //                            Post Endpoints                               //
         //-------------------------------------------------------------------------//
-        [HttpPost("update")]
+        [HttpPut("update")]
         public async Task<ActionResult<UserDTO>> Update(UpdateUserDTO updateUserDTO)
         {
             var command = new UpdateUser(updateUserDTO);
