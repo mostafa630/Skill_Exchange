@@ -5,7 +5,7 @@ namespace Skill_Exchange.Domain.Entities
         public Guid Id { get; set; }
         public string Name { get; set; }
         public bool IsPredefined { get; set; }
-        public string CreatedBy { get; set; }
+        public string CreatedBy { get; set; } = "System";
 
         //Navigation properties
         public Guid SkillCategoryId { get; set; }

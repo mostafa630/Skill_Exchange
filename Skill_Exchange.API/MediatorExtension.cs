@@ -43,13 +43,14 @@ namespace Skill_Exchange.API
         }
         public static IServiceCollection AddSkillHandlers(this IServiceCollection services)
         {
-            services.AddTransient<IRequestHandler<GetAll<Skill, Skill>, Result<IEnumerable<Skill>>>, GetAllHandler<Skill, Skill>>();
-            services.AddTransient<IRequestHandler<GetById<Skill, Skill>, Result<Skill>>, GetByIdHandler<Skill, Skill>>();
+            services.AddTransient<IRequestHandler<GetAll<Skill, SkillResponseDto>, Result<IEnumerable<SkillResponseDto>>>, GetAllHandler<Skill, SkillResponseDto>>();
+            services.AddTransient<IRequestHandler<GetById<Skill, SkillResponseDto>, Result<SkillResponseDto>>, GetByIdHandler<Skill, SkillResponseDto>>();
             services.AddTransient<IRequestHandler<Add<Skill, CreateSkillDto, Skill>, Skill>, AddHandler<Skill, CreateSkillDto, Skill>>();
             services.AddTransient<IRequestHandler<UpdateSkill, Result<string>>, UpdateSkillHandler>();
             services.AddTransient<IRequestHandler<Delete<Skill>, Result<string>>, DeleteHandler<Skill>>();
             return services;
         }
+
 
     }
 }

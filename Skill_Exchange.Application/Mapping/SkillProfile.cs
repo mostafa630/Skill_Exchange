@@ -10,6 +10,7 @@ namespace Skill_Exchange.Application.Mapping
         {
             CreateMap<Skill, CreateSkillDto>().ReverseMap();
             CreateMap<Skill, UpdateSkillDto>().ReverseMap();
+            CreateMap<Skill, SkillResponseDto>().ReverseMap();
         }
 
     }
