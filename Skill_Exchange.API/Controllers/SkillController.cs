@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Skill_Exchange.Application.DTOs;
 using Skill_Exchange.Application.DTOs.Skill;
+using Skill_Exchange.Application.DTOs.Skill_Category;
 using Skill_Exchange.Application.Services.GlobalCommands;
 using Skill_Exchange.Application.Services.GlobalQuery;
 using Skill_Exchange.Application.Services.Skill.Commands;
@@ -26,6 +27,7 @@ namespace Skill_Exchange.API.Controllers
         [HttpPost]
         public async Task<IActionResult> AddSkill([FromBody] CreateSkillDto dto)
         {
+
             // Check if skill with same name already exists
             var existingSkills = await _mediator.Send(new GetAll<Skill, SkillResponseDto>(null));
             if (existingSkills.Success && existingSkills.Data != null)
@@ -36,6 +38,9 @@ namespace Skill_Exchange.API.Controllers
                 if (exists)
                     return BadRequest($"A skill with the name '{dto.Name}' already exists.");
             }
+            var category = await _mediator.Send(new GetById<SkillCategory, SkillCategoryDTO>(dto.SkillCategoryId));
+            if (!category.Success || category.Data == null)
+                return BadRequest("Invalid SkillCategoryId: Category not found.");
 
             // Proceed to add the new skill
             var entity = await _mediator.Send(new Add<Skill, CreateSkillDto, Skill>(dto));
