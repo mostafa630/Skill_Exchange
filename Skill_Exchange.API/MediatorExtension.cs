@@ -1,11 +1,14 @@
 ﻿using MediatR;
 using Skill_Exchange.Application.DTOs;
+using Skill_Exchange.Application.DTOs.Skill;
 using Skill_Exchange.Application.DTOs.Skill_Category;
 using Skill_Exchange.Application.DTOs.User;
 using Skill_Exchange.Application.Services.GlobalCommands;
 using Skill_Exchange.Application.Services.GlobalCommands.Handlers;
 using Skill_Exchange.Application.Services.GlobalQuery;
 using Skill_Exchange.Application.Services.GlobalQuery.Handlers;
+using Skill_Exchange.Application.Services.Skill.Commands;
+using Skill_Exchange.Application.Services.Skill.Commands.Handlers;
 using Skill_Exchange.Application.Services.SkillCategory.Commands;
 using Skill_Exchange.Application.Services.SkillCategory.Commands.Handlers;
 using Skill_Exchange.Domain.Entities;
@@ -40,7 +43,11 @@ namespace Skill_Exchange.API
         }
         public static IServiceCollection AddSkillHandlers(this IServiceCollection services)
         {
-            //TODO
+            services.AddTransient<IRequestHandler<GetAll<Skill, Skill>, Result<IEnumerable<Skill>>>, GetAllHandler<Skill, Skill>>();
+            services.AddTransient<IRequestHandler<GetById<Skill, Skill>, Result<Skill>>, GetByIdHandler<Skill, Skill>>();
+            services.AddTransient<IRequestHandler<Add<Skill, CreateSkillDto, Skill>, Skill>, AddHandler<Skill, CreateSkillDto, Skill>>();
+            services.AddTransient<IRequestHandler<UpdateSkill, Result<string>>, UpdateSkillHandler>();
+            services.AddTransient<IRequestHandler<Delete<Skill>, Result<string>>, DeleteHandler<Skill>>();
             return services;
         }
 
