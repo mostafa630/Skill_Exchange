@@ -9,7 +9,7 @@ namespace Skill_Exchange.Domain.Interfaces
         IGenericRepository<SkillCategory> SkillCategories { get; }
         IGenericRepository<UserSkills> UserSkills { get; }
         IGenericRepository<RatingAndFeedback> RatingsAndFeedbacks { get; }
-        IGenericRepository<Request> Requests { get; }
+        IRequestRepository Requests { get; }
         IGenericRepository<Conversation> Conversations { get; }
         IGenericRepository<Notification> Notifications { get; }
         IPendingVerificationRepository PendingVerifications { get; }

@@ -48,6 +48,7 @@ namespace Skill_Exchange.API
         public static IServiceCollection AddRequestHandlers(this IServiceCollection services)
         {
             services.AddTransient<IRequestHandler<Add<Request, CreateRequestDTO, RequestDTO>, Result<RequestDTO>>, AddHandler<Request, CreateRequestDTO, RequestDTO>>();
+            services.AddTransient<IRequestHandler<GetAll<Request, RequestDTO>, Result<IEnumerable<RequestDTO>>>, GetAllHandler<Request, RequestDTO>>();
             return services;
         }
 

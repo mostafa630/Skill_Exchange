@@ -1,6 +1,7 @@
 ﻿using Skill_Exchange.Domain.Entities;
 using Skill_Exchange.Domain.Interfaces;
 using Skill_Exchange.Infrastructure.Peresistence;
+using Skill_Exchange.Infrastructure.Repositories;
 
 namespace Skill_Exchange.Infrastructure
 {
@@ -12,7 +13,7 @@ namespace Skill_Exchange.Infrastructure
         public IGenericRepository<SkillCategory> SkillCategories { get; private set; }
         public IGenericRepository<UserSkills> UserSkills { get; private set; }
         public IGenericRepository<RatingAndFeedback> RatingsAndFeedbacks { get; private set; }
-        public IGenericRepository<Request> Requests { get; private set; }
+        public IRequestRepository Requests { get; private set; }
         public IGenericRepository<Conversation> Conversations { get; private set; }
         public IGenericRepository<Notification> Notifications { get; private set; }
         public IPendingVerificationRepository PendingVerifications { get; private set; }
@@ -25,7 +26,7 @@ namespace Skill_Exchange.Infrastructure
             SkillCategories = new GenericRepository<SkillCategory>(context);
             UserSkills = new GenericRepository<UserSkills>(context);
             RatingsAndFeedbacks = new GenericRepository<RatingAndFeedback>(context);
-            Requests = new GenericRepository<Request>(context);
+            Requests = new RequestRepository(context);
             Conversations = new GenericRepository<Conversation>(context);
             Notifications = new GenericRepository<Notification>(context);
             PendingVerifications = new PendingVerificationRepository(context);
