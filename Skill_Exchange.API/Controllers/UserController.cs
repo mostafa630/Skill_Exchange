@@ -59,10 +59,8 @@ namespace Skill_Exchange.API.Controllers
             var userSpec = UserSpecification.Build(userFilterDTO);
             var query = new GetAll<AppUser, UserDTO>(userSpec);
             var response = await _mediator.Send(query);
-            return Ok(response);
-            // var query = new GetAllUsers();
-            // var response = await _mediator.Send(query);
-            //return response.Success ? Ok(response.Data) : BadRequest(response.Error);
+
+            return response.Success ? Ok(response.Data) : BadRequest(response.Error);
         }
 
         //-------------------------------------------------------------------------//

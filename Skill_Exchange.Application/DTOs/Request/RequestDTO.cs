@@ -2,12 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Skill_Exchange.Domain.Enums;
 
-namespace Skill_Exchange.Domain.Entities
+namespace Skill_Exchange.Application.DTOs.Request
 {
-    public class Request
+    public class RequestDTO
     {
         public Guid Id { get; set; }
         public RequestStatus Status { get; set; }
@@ -17,13 +16,5 @@ namespace Skill_Exchange.Domain.Entities
         //Navigation properties
         public Guid SenderId { get; set; }
         public Guid RecieverId { get; set; }
-        public AppUser Sender { get; set; }
-        public AppUser Reciever { get; set; }
-
-
-        public override string ToString()
-        {
-            return $"Request(Id={Id}, Status={Status}, CreatedAt={CreatedAt}, RespondedAt={RespondedAt}, SenderId={SenderId}, RecieverId={RecieverId})";
-        }
     }
 }
