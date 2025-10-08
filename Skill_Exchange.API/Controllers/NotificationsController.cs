@@ -51,7 +51,7 @@ namespace Skill_Exchange.API.Controllers
             if (!result.Success)
                 return BadRequest(result.Error);
 
-            return Ok(result.Data);
+            return Ok("Notification added successfully.");
         }
 
         //  4) Update notification
@@ -62,7 +62,7 @@ namespace Skill_Exchange.API.Controllers
             if (!result.Success)
                 return BadRequest(result.Error);
 
-            return Ok(result.Error);
+            return Ok("Notification updated successfully.");
         }
 
         //  5) Delete notification by Id
@@ -73,7 +73,7 @@ namespace Skill_Exchange.API.Controllers
             if (!result.Success)
                 return BadRequest(result.Error);
 
-            return Ok(result.Error);
+            return Ok("Notification deleted successfully.");
         }
 
         //  6) Get notifications by user Id
@@ -96,7 +96,7 @@ namespace Skill_Exchange.API.Controllers
             if (!result.Success)
                 return BadRequest(result.Error);
 
-            return Ok(result.Data);
+            return Ok("Notification deleted successfully.");
         }
     }
 }

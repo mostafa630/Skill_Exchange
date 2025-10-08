@@ -1,13 +1,18 @@
 ﻿using MediatR;
 using Skill_Exchange.Application.DTOs;
-using Skill_Exchange.Application.DTOs.Skill;
+using Skill_Exchange.Application.DTOs.Notifications;
 using Skill_Exchange.Application.DTOs.Request;
+using Skill_Exchange.Application.DTOs.Skill;
 using Skill_Exchange.Application.DTOs.Skill_Category;
 using Skill_Exchange.Application.DTOs.User;
 using Skill_Exchange.Application.Services.GlobalCommands;
 using Skill_Exchange.Application.Services.GlobalCommands.Handlers;
 using Skill_Exchange.Application.Services.GlobalQuery;
 using Skill_Exchange.Application.Services.GlobalQuery.Handlers;
+using Skill_Exchange.Application.Services.Notifications.Commands;
+using Skill_Exchange.Application.Services.Notifications.Commands.Handlers;
+using Skill_Exchange.Application.Services.Notifications.Queries;
+using Skill_Exchange.Application.Services.Notifications.Queries.Handlers;
 using Skill_Exchange.Application.Services.Skill.Commands;
 using Skill_Exchange.Application.Services.Skill.Commands.Handlers;
 using Skill_Exchange.Application.Services.SkillCategory.Commands;
@@ -24,7 +29,8 @@ namespace Skill_Exchange.API
             .AddUserHandlers()
             .AddSkillHandlers()
             .AddSkillCategoryHandlers()
-            .AddRequestHandlers();
+            .AddRequestHandlers()
+            .AddNotificationHandlers();
             return services;
         }
         public static IServiceCollection AddUserHandlers(this IServiceCollection services)
@@ -56,6 +62,19 @@ namespace Skill_Exchange.API
         {
             services.AddTransient<IRequestHandler<Add<Request, CreateRequestDTO, RequestDTO>, Result<RequestDTO>>, AddHandler<Request, CreateRequestDTO, RequestDTO>>();
             services.AddTransient<IRequestHandler<GetAll<Request, RequestDTO>, Result<IEnumerable<RequestDTO>>>, GetAllHandler<Request, RequestDTO>>();
+            return services;
+        }
+        public static IServiceCollection AddNotificationHandlers(this IServiceCollection services)
+        {
+            services.AddTransient<IRequestHandler<GetAll<Notification, NotificationDto>, Result<IEnumerable<NotificationDto>>>, GetAllHandler<Notification, NotificationDto>>();
+            services.AddTransient<IRequestHandler<GetById<Notification, NotificationDto>, Result<NotificationDto>>, GetByIdHandler<Notification, NotificationDto>>();
+            services.AddTransient<IRequestHandler<Add<Notification, CreateNotificationDto, NotificationDto>, Result<NotificationDto>>, AddHandler<Notification, CreateNotificationDto, NotificationDto>>();
+            services.AddTransient<IRequestHandler<Delete<Notification>, Result<string>>, DeleteHandler<Notification>>();
+            services.AddTransient<IRequestHandler<GetNotificationsByUserId, Result<List<NotificationDto>>>, GetNotificationsByUserIdHandler>();
+            //services.AddTransient<IRequestHandler<DeleteUserNotification, Result<string>>, DeleteUserNotificationHandler>();
+            services.AddTransient<IRequestHandler<DeleteSpecificUserNotification, Result<string>>, DeleteSpecificUserNotificationHandler>();
+            services.AddTransient<IRequestHandler<UpdateNotification, Result<string>>, UpdateNotificationHandler>();
+
             return services;
         }
 
