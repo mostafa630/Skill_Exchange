@@ -6,7 +6,11 @@ using System.Threading.Tasks;
 
 namespace Skill_Exchange.Application.DTOs.Notifications
 {
-    internal class CreateNotificationDto
+    public class CreateNotificationDto
     {
+        public string Title { get; set; }
+        public string Message { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public Guid RefrenceId { get; set; }
     }
 }

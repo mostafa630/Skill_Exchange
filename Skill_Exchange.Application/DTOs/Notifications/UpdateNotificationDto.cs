@@ -6,7 +6,12 @@ using System.Threading.Tasks;
 
 namespace Skill_Exchange.Application.DTOs.Notifications
 {
-    internal class UpdateNotificationDto
+    public class UpdateNotificationDto
     {
+        public Guid Id { get; set; }
+        public string Title { get; set; }
+        public string Message { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public Guid RefrenceId { get; set; }
     }
 }
