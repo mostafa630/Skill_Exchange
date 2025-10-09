@@ -7,7 +7,7 @@ namespace Skill_Exchange.Domain.Interfaces
         IUserRepository Users { get; }
         IGenericRepository<Skill> Skills { get; }
         IGenericRepository<SkillCategory> SkillCategories { get; }
-        IGenericRepository<UserSkills> UserSkills { get; }
+        IUserSkillRepository UserSkills { get; }
         IGenericRepository<RatingAndFeedback> RatingsAndFeedbacks { get; }
         IRequestRepository Requests { get; }
         IGenericRepository<Conversation> Conversations { get; }

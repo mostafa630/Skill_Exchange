@@ -5,6 +5,7 @@ using Skill_Exchange.Application.DTOs.Request;
 using Skill_Exchange.Application.DTOs.Skill;
 using Skill_Exchange.Application.DTOs.Skill_Category;
 using Skill_Exchange.Application.DTOs.User;
+using Skill_Exchange.Application.DTOs.UserSkill;
 using Skill_Exchange.Application.Services.GlobalCommands;
 using Skill_Exchange.Application.Services.GlobalCommands.Handlers;
 using Skill_Exchange.Application.Services.GlobalQuery;
@@ -30,7 +31,8 @@ namespace Skill_Exchange.API
             .AddSkillHandlers()
             .AddSkillCategoryHandlers()
             .AddRequestHandlers()
-            .AddNotificationHandlers();
+            .AddNotificationHandlers()
+            .AddUserSkillHandlers();
             return services;
         }
         public static IServiceCollection AddUserHandlers(this IServiceCollection services)
@@ -62,6 +64,12 @@ namespace Skill_Exchange.API
         {
             services.AddTransient<IRequestHandler<Add<Request, CreateRequestDTO, RequestDTO>, Result<RequestDTO>>, AddHandler<Request, CreateRequestDTO, RequestDTO>>();
             services.AddTransient<IRequestHandler<GetAll<Request, RequestDTO>, Result<IEnumerable<RequestDTO>>>, GetAllHandler<Request, RequestDTO>>();
+            return services;
+        }
+        public static IServiceCollection AddUserSkillHandlers(this IServiceCollection services)
+        {
+            services.AddTransient<IRequestHandler<Add<UserSkills, AddUserSkillDTO, UserSkillDTO>, Result<UserSkillDTO>>, AddHandler<UserSkills, AddUserSkillDTO, UserSkillDTO>>();
+            //services.AddTransient<IRequestHandler<GetAll<Request, RequestDTO>, Result<IEnumerable<RequestDTO>>>, GetAllHandler<Request, RequestDTO>>();
             return services;
         }
         public static IServiceCollection AddNotificationHandlers(this IServiceCollection services)

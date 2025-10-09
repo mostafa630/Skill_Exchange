@@ -1,11 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Skill_Exchange.Application.DTOs.Request;
 using Skill_Exchange.Application.Services.GlobalCommands;
 using Skill_Exchange.Application.Services.GlobalQuery;
@@ -14,7 +8,8 @@ using Skill_Exchange.Domain.Entities;
 
 namespace Skill_Exchange.API.Controllers
 {
-    [Route("[controller]")]
+    [Route("api/[controller]")]
+    [ApiController]
     public class RequestController : Controller
     {
         private readonly IMediator _mediator;
@@ -36,13 +31,6 @@ namespace Skill_Exchange.API.Controllers
             return response.Success ? Ok(response.Data) : BadRequest(response.Error);
         }
 
-        [HttpGet("between")]
-        public async Task<ActionResult<RequestDTO>> GetRequestBetween(GetRequestBetweenDto betweenDto)
-        {
-            var query = new GetRequestBetween(betweenDto);
-            var response = await _mediator.Send(query);
-            return response.Success ? Ok(response.Data) : BadRequest(response.Error);
-        }
         [HttpGet("sendedBy")]
         public async Task<ActionResult<IEnumerable<RequestDTO>>> GetRequestsSendedBy(string SenderId)
         {
@@ -64,6 +52,17 @@ namespace Skill_Exchange.API.Controllers
             }
 
             var query = new GetRequestsReceived(Guid.Parse(RecieverId));
+            var response = await _mediator.Send(query);
+            return response.Success ? Ok(response.Data) : BadRequest(response.Error);
+        }
+
+        //-------------------------------------------------------------------------//
+        //                            Post Endpoints That get                       //
+        //-------------------------------------------------------------------------//
+        [HttpPost("between")]
+        public async Task<ActionResult<RequestDTO>> GetRequestBetween(GetRequestBetweenDto betweenDto)
+        {
+            var query = new GetRequestBetween(betweenDto);
             var response = await _mediator.Send(query);
             return response.Success ? Ok(response.Data) : BadRequest(response.Error);
         }

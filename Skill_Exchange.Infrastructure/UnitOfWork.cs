@@ -11,7 +11,7 @@ namespace Skill_Exchange.Infrastructure
         public IUserRepository Users { get; private set; }
         public IGenericRepository<Skill> Skills { get; private set; }
         public IGenericRepository<SkillCategory> SkillCategories { get; private set; }
-        public IGenericRepository<UserSkills> UserSkills { get; private set; }
+        public IUserSkillRepository UserSkills { get; private set; }
         public IGenericRepository<RatingAndFeedback> RatingsAndFeedbacks { get; private set; }
         public IRequestRepository Requests { get; private set; }
         public IGenericRepository<Conversation> Conversations { get; private set; }
@@ -24,7 +24,7 @@ namespace Skill_Exchange.Infrastructure
             Users = new UserRepository(context);
             Skills = new GenericRepository<Skill>(context);
             SkillCategories = new GenericRepository<SkillCategory>(context);
-            UserSkills = new GenericRepository<UserSkills>(context);
+            UserSkills = new UserSkillRepository(context);
             RatingsAndFeedbacks = new GenericRepository<RatingAndFeedback>(context);
             Requests = new RequestRepository(context);
             Conversations = new GenericRepository<Conversation>(context);

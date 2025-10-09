@@ -12,6 +12,8 @@ using FluentValidation.AspNetCore;
 using Skill_Exchange.Application.FluentValidation.Auth;
 using Microsoft.AspNetCore.Identity;
 using Skill_Exchange.Domain.Entities;
+using FluentValidation;
+using System.Text.Json.Serialization;
 
 
 
@@ -40,6 +42,16 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
+
+//---------------------------- serialzie Enums to its String values -----------
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
+
+
+//-----------------------------Identity-------------------
 
 builder.Services.AddIdentity<AppUser, IdentityRole<Guid>>()
     .AddEntityFrameworkStores<AppDbContext>()
@@ -81,14 +93,10 @@ builder.Services.AddCors(options =>
               .AllowAnyHeader();
     });
 });
-// ==================== Add Controllers & FluentValidation ====================
-builder.Services.AddControllers()
-    .AddFluentValidation(fv =>
-    {
-        fv.RegisterValidatorsFromAssemblyContaining<LoginRequestDtoValidator>();
-        fv.DisableDataAnnotationsValidation = true; // optional: disable default attributes
-    });
 
+builder.Services.AddControllers();
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<LoginRequestDtoValidator>();
 // ---------------------- Build App ----------------------
 var app = builder.Build();
 
