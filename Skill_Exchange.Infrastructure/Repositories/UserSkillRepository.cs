@@ -1,5 +1,6 @@
 
 using Microsoft.EntityFrameworkCore;
+using Skill_Exchange.Application.DTOs.UserSkill;
 using Skill_Exchange.Domain.Entities;
 using Skill_Exchange.Domain.Enums;
 using Skill_Exchange.Domain.Interfaces;
@@ -35,7 +36,7 @@ namespace Skill_Exchange.Infrastructure.Repositories
             }
             return await query.ToListAsync();
         }
-        public async Task<IEnumerable<AppUser>> GetUsersBySkillAsync(Guid skillId, string? exchangePurpose = null)
+        public async Task<IEnumerable<UserSkills>> GetUsersBySkillAsync(Guid skillId, string? exchangePurpose = null)
         {
             var query = _context.UserSkills
             .Include(us => us.User)
@@ -45,11 +46,7 @@ namespace Skill_Exchange.Infrastructure.Repositories
             {
                 query = query.Where(us => us.Purpose.ToString() == exchangePurpose);
             }
-
-            return await query
-            .Select(us => us.User)
-            .Distinct()
-            .ToListAsync();
+            return await query.ToListAsync();
         }
 
         public async Task<bool> UserHasSkillAsync(Guid userId, Guid skillId)

@@ -4,13 +4,16 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using MediatR;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 using Skill_Exchange.Application.DTOs;
 using Skill_Exchange.Application.DTOs.User;
+using Skill_Exchange.Application.DTOs.UserSkill;
 using Skill_Exchange.Domain.Interfaces;
 
 namespace Skill_Exchange.Application.Services.UserSkill.Queries.Handlers
 {
-    public class GetUsersBySkillHandler : IRequestHandler<GetUsersBySkill, Result<IEnumerable<UserDTO>>>
+    public class GetUsersBySkillHandler : IRequestHandler<GetUsersBySkill, Result<IEnumerable<UserWithSkillInfoDto>>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
@@ -19,17 +22,33 @@ namespace Skill_Exchange.Application.Services.UserSkill.Queries.Handlers
             _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
-        public async Task<Result<IEnumerable<UserDTO>>> Handle(GetUsersBySkill request, CancellationToken cancellationToken)
+        public async Task<Result<IEnumerable<UserWithSkillInfoDto>>> Handle(GetUsersBySkill request, CancellationToken cancellationToken)
         {
             try
             {
-                var users = _unitOfWork.UserSkills.GetUsersBySkillAsync(request.getUsersBySkillDTO.SkillId, request.getUsersBySkillDTO.Purpose?.ToString());
-                var usersDTOs = _mapper.Map<IEnumerable<UserDTO>>(users);
-                return Result<IEnumerable<UserDTO>>.Ok(usersDTOs);
+                var userSkills = await _unitOfWork.UserSkills.GetUsersBySkillAsync(request.getUsersBySkillDTO.SkillId, request.getUsersBySkillDTO.Purpose?.ToString());
+                var skillUsersInfo = userSkills.Select(us => new UserWithSkillInfoDto
+                {
+                    Id = us.User.Id,
+                    FirstName = us.User.FirstName,
+                    LastName = us.User.LastName,
+                    Email = us.User.Email,
+                    PhoneNumber = us.User.PhoneNumber,
+                    Bio = us.User.Bio,
+                    ProfileImageUrl = us.User.ProfileImageUrl,
+                    YearsOfExperience = us.YearsOfExperience,
+                    Description = us.Description,
+                    Purpose = us.Purpose
+                })
+                .DistinctBy(u => u.Id) // avoids duplicates if any
+                .ToList();
+
+                return Result<IEnumerable<UserWithSkillInfoDto>>.Ok(skillUsersInfo);
+
             }
             catch
             {
-                return Result<IEnumerable<UserDTO>>.Fail("Operation Failed");
+                return Result<IEnumerable<UserWithSkillInfoDto>>.Fail("Operation Failed");
             }
 
 

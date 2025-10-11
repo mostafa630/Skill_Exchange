@@ -10,7 +10,7 @@ using Skill_Exchange.Application.DTOs.UserSkill;
 
 namespace Skill_Exchange.Application.Services.UserSkill.Queries
 {
-    public record GetUsersBySkill(GetUsersBySkillDTO getUsersBySkillDTO) : IRequest<Result<IEnumerable<UserDTO>>>;
+    public record GetUsersBySkill(GetUsersBySkillDTO getUsersBySkillDTO) : IRequest<Result<IEnumerable<UserWithSkillInfoDto>>>;
 
 
 }
