@@ -13,5 +13,7 @@ namespace Skill_Exchange.Domain.Interfaces
         Task<UserSkills?> GetUserSkillAsync(Guid userId, Guid skillId);
         Task<IEnumerable<UserSkills>> GetUsersBySkillAsync(Guid skillId, string? exchangePurpose = null);
         Task<bool> UserHasSkillAsync(Guid userId, Guid skillId);
+
+        Task<bool> DeleteUserSkill(Guid userId, Guid skillId);
     }
 }

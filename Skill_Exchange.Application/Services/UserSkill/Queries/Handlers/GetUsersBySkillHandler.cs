@@ -27,31 +27,16 @@ namespace Skill_Exchange.Application.Services.UserSkill.Queries.Handlers
             try
             {
                 var userSkills = await _unitOfWork.UserSkills.GetUsersBySkillAsync(request.getUsersBySkillDTO.SkillId, request.getUsersBySkillDTO.Purpose?.ToString());
-                var skillUsersInfo = userSkills.Select(us => new UserWithSkillInfoDto
-                {
-                    Id = us.User.Id,
-                    FirstName = us.User.FirstName,
-                    LastName = us.User.LastName,
-                    Email = us.User.Email,
-                    PhoneNumber = us.User.PhoneNumber,
-                    Bio = us.User.Bio,
-                    ProfileImageUrl = us.User.ProfileImageUrl,
-                    YearsOfExperience = us.YearsOfExperience,
-                    Description = us.Description,
-                    Purpose = us.Purpose
-                })
+                var skillUsersInfo = _mapper.Map<IEnumerable<UserWithSkillInfoDto>>(userSkills)
                 .DistinctBy(u => u.Id) // avoids duplicates if any
                 .ToList();
 
                 return Result<IEnumerable<UserWithSkillInfoDto>>.Ok(skillUsersInfo);
-
             }
             catch
             {
                 return Result<IEnumerable<UserWithSkillInfoDto>>.Fail("Operation Failed");
             }
-
-
         }
     }
 }

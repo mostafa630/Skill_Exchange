@@ -54,5 +54,25 @@ namespace Skill_Exchange.Infrastructure.Repositories
             return await _context.UserSkills
             .AnyAsync(us => us.UserId == userId && us.SkillId == skillId);
         }
+        public async Task<bool> DeleteUserSkill(Guid userId, Guid skillId)
+        {
+            try
+            {
+
+                var userSkill = await _context.UserSkills.FirstOrDefaultAsync(us => us.UserId == userId && us.SkillId == skillId);
+                if (userSkill is null)
+                    return false;
+
+                _context.UserSkills.Remove(userSkill);
+                _context.SaveChanges();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+
+        }
+
     }
 }

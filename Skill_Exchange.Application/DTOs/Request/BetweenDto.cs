@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Skill_Exchange.Application.DTOs.Request
 {
-    public class GetRequestBetweenDto
+    public class BetweenDto
     {
         public Guid User1Id { get; set; }
         public Guid User2Id { get; set; }

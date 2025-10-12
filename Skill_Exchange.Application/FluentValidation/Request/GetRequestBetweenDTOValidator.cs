@@ -3,7 +3,7 @@ using Skill_Exchange.Application.DTOs.Request;
 
 namespace Skill_Exchange.Application.FluentValidation.Request
 {
-    public class GetRequestBetweenDTOValidator : AbstractValidator<GetRequestBetweenDto>
+    public class GetRequestBetweenDTOValidator : AbstractValidator<BetweenDto>
     {
         public GetRequestBetweenDTOValidator()
         {

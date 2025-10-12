@@ -18,7 +18,7 @@ namespace Skill_Exchange.Infrastructure.Repositories
             return await _dbSet.FirstOrDefaultAsync(r =>
                 (r.SenderId == user1Id && r.RecieverId == user2Id)
                 || (r.SenderId == user2Id && r.RecieverId == user1Id)
-            ); 
+            );
         }
 
         public async Task<IEnumerable<Request>> GetRequestsReceivedByAsync(Guid RecieverId)
@@ -30,6 +30,22 @@ namespace Skill_Exchange.Infrastructure.Repositories
         {
             return await _dbSet.Where(r => r.SenderId == SenderId).ToListAsync();
         }
+        public async Task<bool> DeleteRequestBetween(Guid user1Id, Guid user2Id)
+        {
+            try
+            {
+                var request = await _context.Requests.FirstOrDefaultAsync(us => (us.SenderId == user1Id && us.RecieverId == user2Id) || (us.SenderId == user2Id && us.RecieverId == user1Id));
+                if (request is null)
+                    return false;
 
+                _context.Requests.Remove(request);
+                _context.SaveChanges();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
 }

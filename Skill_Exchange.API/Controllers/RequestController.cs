@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Skill_Exchange.Application.DTOs.Request;
 using Skill_Exchange.Application.Services.GlobalCommands;
 using Skill_Exchange.Application.Services.GlobalQuery;
+using Skill_Exchange.Application.Services.Request.Commands;
 using Skill_Exchange.Application.Services.Request.Queries;
 using Skill_Exchange.Domain.Entities;
 
@@ -23,7 +24,7 @@ namespace Skill_Exchange.API.Controllers
         //-------------------------------------------------------------------------//
         //                            Get Endpoints                                //
         //-------------------------------------------------------------------------//
-        [HttpGet("all")]
+        [HttpGet("api/all")]
         public async Task<ActionResult<IEnumerable<RequestDTO>>> GeTAll()
         {
             var query = new GetAll<Request, RequestDTO>(null);
@@ -31,7 +32,7 @@ namespace Skill_Exchange.API.Controllers
             return response.Success ? Ok(response.Data) : BadRequest(response.Error);
         }
 
-        [HttpGet("sendedBy")]
+        [HttpGet("api/sendedBy")]
         public async Task<ActionResult<IEnumerable<RequestDTO>>> GetRequestsSendedBy(string SenderId)
         {
             if (String.IsNullOrEmpty(SenderId.ToString()) || !Guid.TryParse(SenderId, out _))
@@ -43,7 +44,8 @@ namespace Skill_Exchange.API.Controllers
             var response = await _mediator.Send(query);
             return response.Success ? Ok(response.Data) : BadRequest(response.Error);
         }
-        [HttpGet("receiveddBy")]
+
+        [HttpGet("api/receiveddBy")]
         public async Task<ActionResult<IEnumerable<RequestDTO>>> GetRequestsReceiveddBy(string RecieverId)
         {
             if (String.IsNullOrEmpty(RecieverId.ToString()) || !Guid.TryParse(RecieverId, out _))
@@ -56,11 +58,8 @@ namespace Skill_Exchange.API.Controllers
             return response.Success ? Ok(response.Data) : BadRequest(response.Error);
         }
 
-        //-------------------------------------------------------------------------//
-        //                            Post Endpoints That get                       //
-        //-------------------------------------------------------------------------//
-        [HttpPost("between")]
-        public async Task<ActionResult<RequestDTO>> GetRequestBetween(GetRequestBetweenDto betweenDto)
+        [HttpGet("api/between")]
+        public async Task<ActionResult<RequestDTO>> GetRequestBetween(BetweenDto betweenDto)
         {
             var query = new GetRequestBetween(betweenDto);
             var response = await _mediator.Send(query);
@@ -70,12 +69,31 @@ namespace Skill_Exchange.API.Controllers
         //-------------------------------------------------------------------------//
         //                            Post Endpoints                               //
         //-------------------------------------------------------------------------//
-        [HttpPost("add")]
+        [HttpPost("api/add")]
         public async Task<ActionResult<RequestDTO>> Add(CreateRequestDTO createRequestDTO)
         {
             var command = new Add<Request, CreateRequestDTO, RequestDTO>(createRequestDTO);
             var response = await _mediator.Send(command);
 
+            return response.Success ? Ok(response.Data) : BadRequest(response.Error);
+        }
+
+        //-------------------------------------------------------------------------//
+        //                            Delte Endpoints                              //
+        //-------------------------------------------------------------------------//
+        //  Delete Skill
+        [HttpDelete("{id:guid}")]
+        public async Task<IActionResult> DeleteRequest(Guid id)
+        {
+            var command = new Delete<Request>(id);
+            var response = await _mediator.Send(command);
+            return response.Success ? Ok(response.Data) : BadRequest(response.Error);
+        }
+        [HttpDelete("api/delte-between")]
+        public async Task<ActionResult<bool>> DeleteRequestBetween(BetweenDto deleteRequestBetweenDTo)
+        {
+            var command = new DeleteRequestBetween(deleteRequestBetweenDTo);
+            var response = await _mediator.Send(command);
             return response.Success ? Ok(response.Data) : BadRequest(response.Error);
         }
 

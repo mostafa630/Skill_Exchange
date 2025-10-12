@@ -64,12 +64,14 @@ namespace Skill_Exchange.API
         {
             services.AddTransient<IRequestHandler<Add<Request, CreateRequestDTO, RequestDTO>, Result<RequestDTO>>, AddHandler<Request, CreateRequestDTO, RequestDTO>>();
             services.AddTransient<IRequestHandler<GetAll<Request, RequestDTO>, Result<IEnumerable<RequestDTO>>>, GetAllHandler<Request, RequestDTO>>();
+            services.AddTransient<IRequestHandler<Delete<Request>, Result<string>>, DeleteHandler<Request>>();
+
             return services;
         }
         public static IServiceCollection AddUserSkillHandlers(this IServiceCollection services)
         {
             services.AddTransient<IRequestHandler<Add<UserSkills, AddUserSkillDTO, UserSkillDTO>, Result<UserSkillDTO>>, AddHandler<UserSkills, AddUserSkillDTO, UserSkillDTO>>();
-            //services.AddTransient<IRequestHandler<GetAll<Request, RequestDTO>, Result<IEnumerable<RequestDTO>>>, GetAllHandler<Request, RequestDTO>>();
+            services.AddTransient<IRequestHandler<GetAll<UserSkills, UserSkillsDTO>, Result<IEnumerable<UserSkillsDTO>>>, GetAllHandler<UserSkills, UserSkillsDTO>>();
             return services;
         }
         public static IServiceCollection AddNotificationHandlers(this IServiceCollection services)

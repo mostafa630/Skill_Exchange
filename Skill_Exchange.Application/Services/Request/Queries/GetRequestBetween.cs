@@ -4,5 +4,5 @@ using Skill_Exchange.Application.DTOs.Request;
 
 namespace Skill_Exchange.Application.Services.Request.Queries
 {
-    public record GetRequestBetween(GetRequestBetweenDto getRequestBetweenDto) : IRequest<Result<RequestDTO>>;
+    public record GetRequestBetween(BetweenDto getRequestBetweenDto) : IRequest<Result<RequestDTO>>;
 }

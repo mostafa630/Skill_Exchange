@@ -11,6 +11,8 @@ namespace Skill_Exchange.Domain.Interfaces
         Task<Request> GetRequestBetweenAsync(Guid user1Id, Guid user2Id);
         Task<IEnumerable<Request>> GetRequestsSendedByAsync(Guid SenderId);
         Task<IEnumerable<Request>> GetRequestsReceivedByAsync(Guid RecieverId);
+        Task<bool> DeleteRequestBetween(Guid user1Id, Guid user2Id);
+
 
     }
 }
