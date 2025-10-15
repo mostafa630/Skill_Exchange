@@ -6,3 +6,5 @@ notes/
 *.suo
 *.cache
 *.log
+publish/
+deploy.sh
