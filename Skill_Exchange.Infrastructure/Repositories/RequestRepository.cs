@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Skill_Exchange.Domain.Interfaces;
 using Skill_Exchange.Domain.Entities;
 using Skill_Exchange.Infrastructure.Peresistence;
+using Skill_Exchange.Domain.Enums;
 
 namespace Skill_Exchange.Infrastructure.Repositories
 {
@@ -47,5 +48,6 @@ namespace Skill_Exchange.Infrastructure.Repositories
                 return false;
             }
         }
+
     }
 }

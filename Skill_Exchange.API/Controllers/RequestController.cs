@@ -78,6 +78,18 @@ namespace Skill_Exchange.API.Controllers
             return response.Success ? Ok(response.Data) : BadRequest(response.Error);
         }
 
+
+        //-------------------------------------------------------------------------//
+        //                            Put Endpoints                               //
+        //-------------------------------------------------------------------------//
+        [HttpPut("change-request-status/{user1Id:Guid}/{user2Id:Guid}")]
+        public async Task<ActionResult<string>> ChangeRequestStatus([FromRoute] Guid user1Id, [FromRoute] Guid user2Id, ChangeRequestStatusDTO changeRequestStatusDTO)
+        {
+            var command = new ChangeRequestStatus(user1Id, user2Id, changeRequestStatusDTO);
+            var response = await _mediator.Send(command);
+            return response.Success ? Ok(response.Data) : BadRequest(response.Error);
+        }
+
         //-------------------------------------------------------------------------//
         //                            Delte Endpoints                              //
         //-------------------------------------------------------------------------//

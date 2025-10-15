@@ -10,14 +10,8 @@ namespace Skill_Exchange.Application.FluentValidation.UserSkill
 {
     public class GetUserSkillsValidator : AbstractValidator<GetUserSkillsDTO>
     {
-
         public GetUserSkillsValidator()
         {
-            RuleFor(r => r.UserId)
-               .NotEmpty()
-               .Must(id => id != Guid.Empty)
-               .WithMessage("Id must be a valid, non-empty GUID.");
-
             RuleFor(r => r.Purpose)
              .Must(value => string.IsNullOrEmpty(value) || Enum.TryParse<ExchangePurpose>(value, true, out _))
              .WithMessage($"Purpose must be one of the following values: {string.Join(", ", Enum.GetNames(typeof(ExchangePurpose)))}");

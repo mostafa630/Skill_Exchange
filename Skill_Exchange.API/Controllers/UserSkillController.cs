@@ -46,15 +46,17 @@ namespace Skill_Exchange.API.Controllers
             return response.Success ? Ok(response.Data) : BadRequest(response.Error);
         }
         [HttpGet("api/user_skill")]
-        public async Task<ActionResult<UserSkillDTO>> GetUserSkill(GetUserSkillDTO getUserSkillDTO)
+        public async Task<ActionResult<UserSkillDTO>> GetUserSkill([FromQuery] GetUserSkillDTO getUserSkillDTO)
         {
+
             var query = new GetUserSkill(getUserSkillDTO);
             var response = await _mediator.Send(query);
             return response.Success ? Ok(response.Data) : BadRequest(response.Error);
         }
-        [HttpGet("api/user_skills")]
-        public async Task<ActionResult<IEnumerable<UserSkillDTO>>> GetUserSkills([FromQuery] GetUserSkillsDTO getUserSkillsDTO)
+        [HttpGet("api/user_skills/{userId:Guid}")]
+        public async Task<ActionResult<IEnumerable<UserSkillDTO>>> GetUserSkills([FromRoute] Guid userId, [FromQuery] GetUserSkillsDTO getUserSkillsDTO)
         {
+            getUserSkillsDTO.UserId = userId;
             var query = new GetUserSkills(getUserSkillsDTO);
             var response = await _mediator.Send(query);
             return response.Success ? Ok(response.Data) : BadRequest(response.Error);

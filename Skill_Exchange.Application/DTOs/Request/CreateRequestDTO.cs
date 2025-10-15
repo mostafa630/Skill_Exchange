@@ -1,14 +1,16 @@
 
+using System.Text.Json.Serialization;
 using Skill_Exchange.Domain.Enums;
 
 namespace Skill_Exchange.Application.DTOs.Request
 {
     public class CreateRequestDTO
     {
-        public RequestStatus Status { get; set; }
+        [JsonIgnore]
+        public RequestStatus Status { get; set; } = RequestStatus.Pending;
         public DateTime CreatedAt { get; set; }
-        public DateTime? RespondedAt { get; set; }
-
+        [JsonIgnore]
+        public DateTime? RespondedAt { get; set; } = null;
         //Navigation properties
         public Guid SenderId { get; set; }
         public Guid RecieverId { get; set; }

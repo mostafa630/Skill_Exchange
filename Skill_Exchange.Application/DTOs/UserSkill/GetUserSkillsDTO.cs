@@ -1,14 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Skill_Exchange.Domain.Enums;
+
+using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Skill_Exchange.Application.DTOs.UserSkill
 {
     public class GetUserSkillsDTO
     {
-        public Guid UserId { get; set; }
+        [JsonIgnore]
+        [BindNever]
+        public Guid UserId { get; set; } = default;
         public string? Purpose { get; set; }
     }
 }

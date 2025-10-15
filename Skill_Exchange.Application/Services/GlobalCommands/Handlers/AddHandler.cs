@@ -18,20 +18,14 @@ namespace Skill_Exchange.Application.Services.GlobalCommands.Handlers
         }
         public async Task<Result<TCreateResponseDTO>> Handle(Add<T, TCreateDTO, TCreateResponseDTO> request, CancellationToken cancellationToken)
         {
-            System.Console.WriteLine("h i hi hih ihisasdfads-----------------------");
             try
             {
-                System.Console.WriteLine("here 1");
                 var newEntity = _mapper.Map<T>(request.CreateDTO);
-                System.Console.WriteLine("here 2");
                 var IsAdded = await _unitOfWork.GetRepository<T>().AddAsync(newEntity);
 
                 if (IsAdded)
                 {
-
-                    System.Console.WriteLine("mapping will start");
                     var ReponseDto = _mapper.Map<TCreateResponseDTO>(newEntity);
-                    System.Console.WriteLine("mapping done");
                     await _unitOfWork.CompleteAsync();
                     return Result<TCreateResponseDTO>.Ok(ReponseDto);
                 }
@@ -44,8 +38,6 @@ namespace Skill_Exchange.Application.Services.GlobalCommands.Handlers
             {
                 return Result<TCreateResponseDTO>.Fail("Adding Operation Failed");
             }
-
-
         }
     }
 }
