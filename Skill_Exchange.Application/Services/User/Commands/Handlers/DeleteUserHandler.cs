@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using MediatR;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Skill_Exchange.Application.DTOs;
 using Skill_Exchange.Domain.Entities;
@@ -12,9 +13,11 @@ namespace Skill_Exchange.Application.Services.User.Commands.Handlers
     public class DeleteUserHandler : IRequestHandler<DelteUser, Result<bool>>
     {
         public readonly UserManager<AppUser> _userManager;
-        public DeleteUserHandler(UserManager<AppUser> userManager)
+        private readonly IWebHostEnvironment _env;
+        public DeleteUserHandler(UserManager<AppUser> userManager, IWebHostEnvironment env)
         {
             _userManager = userManager;
+            _env = env;
         }
 
         public async Task<Result<bool>> Handle(DelteUser request, CancellationToken cancellationToken)
@@ -26,7 +29,19 @@ namespace Skill_Exchange.Application.Services.User.Commands.Handlers
                 {
                     return Result<bool>.Fail("No user Exists");
                 }
+
+                if (!string.IsNullOrEmpty(user.ProfileImageUrl))
+                {
+                    var imagePath = Path.Combine(_env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"),
+                                                 user.ProfileImageUrl.TrimStart('/'));
+                    if (File.Exists(imagePath))
+                    {
+                        File.Delete(imagePath);
+                    }
+                }
+
                 var result = await _userManager.DeleteAsync(user);
+
                 if (!result.Succeeded)
                 {
                     return Result<bool>.Fail("Operation Failed");

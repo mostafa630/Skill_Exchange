@@ -64,7 +64,7 @@ namespace Skill_Exchange.API.Controllers
         }
 
         //-------------------------------------------------------------------------//
-        //                            Post Endpoints                               //
+        //                            Put Endpoints                               //
         //-------------------------------------------------------------------------//
 
         [HttpPut("update/{email}")]
@@ -77,6 +77,17 @@ namespace Skill_Exchange.API.Controllers
             var command = new UpdateUser(updateUserDTO);
             var response = await _mediator.Send(command);
 
+            return response.Success ? Ok(response.Data) : BadRequest(response.Error);
+        }
+
+        //-------------------------------------------------------------------------//
+        //                            Post Endpoints                               //
+        //-------------------------------------------------------------------------//
+        [HttpPost("upload-image/{userId:Guid}")]
+        public async Task<ActionResult<string>> UploadUserImage([FromRoute] Guid userId, IFormFile image)
+        {
+            var command = new UploadImage(userId, image);
+            var response = await _mediator.Send(command);
             return response.Success ? Ok(response.Data) : BadRequest(response.Error);
         }
 
