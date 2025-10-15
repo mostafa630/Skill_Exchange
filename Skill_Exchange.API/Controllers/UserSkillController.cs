@@ -73,6 +73,8 @@ namespace Skill_Exchange.API.Controllers
             return response.Success ? Ok(response.Data) : BadRequest(response.Error);
         }
 
+
+
         //-------------------------------------------------------------------------//
         //                            Delte Endpoints                              //
         //-------------------------------------------------------------------------//
