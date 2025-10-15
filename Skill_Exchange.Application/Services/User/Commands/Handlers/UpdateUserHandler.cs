@@ -33,6 +33,9 @@ namespace Skill_Exchange.Application.Services.User.Commands.Handlers
                 user.FirstName = request.updateUserDTO.FirstName ?? user.FirstName;
                 user.LastName = request.updateUserDTO.LastName ?? user.LastName;
                 user.DateOfBirth = request.updateUserDTO.DateOfBirth ?? user.DateOfBirth;
+                user.Bio = request.updateUserDTO.bio ?? user.Bio;
+                user.PhoneNumber = request.updateUserDTO.PhoneNumber ?? user.PhoneNumber;
+
 
                 var result = await _userManager.UpdateAsync(user);
 

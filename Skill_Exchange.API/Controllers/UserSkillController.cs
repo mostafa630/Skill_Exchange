@@ -53,7 +53,7 @@ namespace Skill_Exchange.API.Controllers
             return response.Success ? Ok(response.Data) : BadRequest(response.Error);
         }
         [HttpGet("api/user_skills")]
-        public async Task<ActionResult<IEnumerable<UserSkillDTO>>> GetUserSkills(GetUserSkillsDTO getUserSkillsDTO)
+        public async Task<ActionResult<IEnumerable<UserSkillDTO>>> GetUserSkills([FromQuery] GetUserSkillsDTO getUserSkillsDTO)
         {
             var query = new GetUserSkills(getUserSkillsDTO);
             var response = await _mediator.Send(query);

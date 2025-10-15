@@ -22,9 +22,11 @@ namespace Skill_Exchange.Application.FluentValidation.User
             .Matches("^[a-zA-Z]+$").WithMessage("Last name must contain only letters.")
             .When(x => x.LastName != null);
 
-            RuleFor(x => x.Email)
-               .NotEmpty().WithMessage("Email is required.")
-               .EmailAddress().WithMessage("Invalid email format.");
+            RuleFor(x => x.PhoneNumber)
+               .Matches(@"^01[0-2,5][0-9]{8}$")
+               .WithMessage("Phone number must be a valid Egyptian mobile number (e.g., 010xxxxxxxx).")
+               .When(x => !string.IsNullOrWhiteSpace(x.PhoneNumber));
+
 
             // DateOfBirth: validate only if it has a value
             RuleFor(x => x.DateOfBirth)

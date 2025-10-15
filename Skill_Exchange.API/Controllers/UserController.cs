@@ -66,11 +66,17 @@ namespace Skill_Exchange.API.Controllers
         //-------------------------------------------------------------------------//
         //                            Post Endpoints                               //
         //-------------------------------------------------------------------------//
-        [HttpPut("update")]
-        public async Task<ActionResult<UserDTO>> Update(UpdateUserDTO updateUserDTO)
+
+        [HttpPut("update/{email}")]
+        public async Task<ActionResult<UserDTO>> Update([FromRoute] string email, [FromBody] UpdateUserDTO updateUserDTO)
         {
+            if (string.IsNullOrWhiteSpace(email))
+                return BadRequest("Email is required.");
+
+            updateUserDTO.Email = email;
             var command = new UpdateUser(updateUserDTO);
             var response = await _mediator.Send(command);
+
             return response.Success ? Ok(response.Data) : BadRequest(response.Error);
         }
 
