@@ -100,12 +100,13 @@ namespace Skill_Exchange.API
             services.AddTransient<IRequestHandler<GetById<RatingAndFeedback, RatingDetailsDto>, Result<RatingDetailsDto>>, GetByIdHandler<RatingAndFeedback, RatingDetailsDto>>();
             services.AddTransient<IRequestHandler<Add<RatingAndFeedback, AddRatingAndFeedbackDto, RatingDetailsDto>, Result<RatingDetailsDto>>, AddHandler<RatingAndFeedback, AddRatingAndFeedbackDto, RatingDetailsDto>>();
             services.AddTransient<IRequestHandler<Delete<RatingAndFeedback>, Result<string>>, DeleteHandler<RatingAndFeedback>>();
-            services.AddTransient<IRequestHandler<GetRatingsReceivedByUserQuery, Result<List<UserRatingsDto>>>, GetRatingsReceivedByUserHandler>();
-            services.AddTransient<IRequestHandler<GetRatingsGivenByUserQuery, Result<List<UserRatingsDto>>>, GetRatingsGivenByUserHandler>();
+            services.AddTransient<IRequestHandler<GetRatingsReceivedByUserQuery, Result<List<RatingReceivedByUserDto>>>, GetRatingsReceivedByUserHandler>();
+            services.AddTransient<IRequestHandler<GetRatingsGivenByUserQuery, Result<List<RatingGivenByUserDto>>>, GetRatingsGivenByUserHandler>();
             services.AddTransient<IRequestHandler<UpdateRatingAndFeedback, Result<string>>, UpdateRatingAndFeedbackHandler>();
 
             return services;
         }
+
 
     }
 }

@@ -73,5 +73,10 @@ namespace Skill_Exchange.Infrastructure
                 return Task.FromResult(false);
             }
         }
+        public IQueryable<T> AsQueryable()
+        {
+            return _dbSet.AsQueryable();
+        }
+
     }
 }

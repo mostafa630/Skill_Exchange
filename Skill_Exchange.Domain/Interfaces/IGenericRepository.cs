@@ -13,7 +13,7 @@
         // Get all entities
         Task<IEnumerable<T>> GetAllAsync();
         Task<IEnumerable<T>> GetAllAsync(ISpecification<T>? spec);
-
+        IQueryable<T> AsQueryable();
 
     }
 }

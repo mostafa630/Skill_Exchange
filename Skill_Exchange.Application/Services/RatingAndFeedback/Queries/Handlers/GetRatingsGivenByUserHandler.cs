@@ -1,14 +1,14 @@
 ﻿using AutoMapper;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Skill_Exchange.Application.DTOs;
 using Skill_Exchange.Application.DTOs.RatingAndFeedback;
-using Skill_Exchange.Domain.Entities;
 using Skill_Exchange.Domain.Interfaces;
 
 namespace Skill_Exchange.Application.Services.RatingAndFeedback.Queries.Handlers
 {
     public class GetRatingsGivenByUserHandler
-        : IRequestHandler<GetRatingsGivenByUserQuery, Result<List<UserRatingsDto>>>
+        : IRequestHandler<GetRatingsGivenByUserQuery, Result<List<RatingGivenByUserDto>>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
@@ -19,20 +19,26 @@ namespace Skill_Exchange.Application.Services.RatingAndFeedback.Queries.Handlers
             _mapper = mapper;
         }
 
-        public async Task<Result<List<UserRatingsDto>>> Handle(GetRatingsGivenByUserQuery request, CancellationToken cancellationToken)
+        public async Task<Result<List<RatingGivenByUserDto>>> Handle(GetRatingsGivenByUserQuery request, CancellationToken cancellationToken)
         {
-            var ratings = await _unitOfWork.RatingsAndFeedbacks.GetAllAsync();
-
-            var givenRatings = ratings
+            var ratings = await _unitOfWork.RatingsAndFeedbacks
+                .AsQueryable()
+                .Include(r => r.ToUser)
                 .Where(r => r.FromUserId == request.fromUserId)
                 .OrderByDescending(r => r.CreatedAt)
-                .ToList();
+                .ToListAsync(cancellationToken);
 
-            if (!givenRatings.Any())
-                return Result<List<UserRatingsDto>>.Fail("No ratings found from this user.");
+            if (!ratings.Any())
+                return Result<List<RatingGivenByUserDto>>.Fail("No ratings found from this user.");
 
-            var mapped = _mapper.Map<List<UserRatingsDto>>(givenRatings);
-            return Result<List<UserRatingsDto>>.Ok(mapped);
+            var mapped = _mapper.Map<List<RatingGivenByUserDto>>(ratings);
+
+            foreach (var (dto, rating) in mapped.Zip(ratings, (dto, rating) => (dto, rating)))
+            {
+                dto.ToUserName = $"{rating.ToUser?.FirstName} {rating.ToUser?.LastName}".Trim();
+            }
+
+            return Result<List<RatingGivenByUserDto>>.Ok(mapped);
         }
     }
 }

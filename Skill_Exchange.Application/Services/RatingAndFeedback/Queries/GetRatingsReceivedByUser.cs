@@ -6,5 +6,5 @@ using System.Collections.Generic;
 
 namespace Skill_Exchange.Application.Services.RatingAndFeedback.Queries
 {
-    public record GetRatingsReceivedByUserQuery(Guid toUserId): IRequest<Result<List<UserRatingsDto>>>;
+    public record GetRatingsReceivedByUserQuery(Guid toUserId): IRequest<Result<List<RatingReceivedByUserDto>>>;
 }

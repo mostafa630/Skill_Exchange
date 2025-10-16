@@ -1,13 +1,11 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Skill_Exchange.Application.DTOs;
 using Skill_Exchange.Application.DTOs.RatingAndFeedback;
 using Skill_Exchange.Application.Services.GlobalCommands;
 using Skill_Exchange.Application.Services.GlobalQuery;
 using Skill_Exchange.Application.Services.RatingAndFeedback.Commands;
 using Skill_Exchange.Application.Services.RatingAndFeedback.Queries;
 using Skill_Exchange.Domain.Entities;
-using System.Threading.Tasks;
 
 namespace Skill_Exchange.API.Controllers
 {
@@ -29,6 +27,7 @@ namespace Skill_Exchange.API.Controllers
             var result = await _mediator.Send(new GetAll<RatingAndFeedback, RatingDetailsDto>(null));
             if (!result.Success)
                 return NotFound(result.Error);
+
             return Ok(result.Data);
         }
 
@@ -39,27 +38,30 @@ namespace Skill_Exchange.API.Controllers
             var result = await _mediator.Send(new GetById<RatingAndFeedback, RatingDetailsDto>(id));
             if (!result.Success)
                 return NotFound(result.Error);
+
             return Ok(result.Data);
         }
 
-        // ✅ (GET) Get ratings received by a user
-        [HttpGet("user/{userId:guid}")]
+        // ✅ (GET) Get ratings received by a specific user
+        [HttpGet("received/{userId:guid}")]
         public async Task<IActionResult> GetRatingsReceivedByUser(Guid userId)
         {
             var result = await _mediator.Send(new GetRatingsReceivedByUserQuery(userId));
             if (!result.Success)
                 return NotFound(result.Error);
-            return Ok(result.Data);
+
+            return Ok(result.Data); // List<RatingReceivedByUserDto>
         }
 
-        // ✅ (GET) Get ratings given by a user
-        [HttpGet("from/{userId:guid}")]
+        // ✅ (GET) Get ratings given by a specific user
+        [HttpGet("given/{userId:guid}")]
         public async Task<IActionResult> GetRatingsGivenByUser(Guid userId)
         {
             var result = await _mediator.Send(new GetRatingsGivenByUserQuery(userId));
             if (!result.Success)
                 return NotFound(result.Error);
-            return Ok(result.Data);
+
+            return Ok(result.Data); // List<RatingGivenByUserDto>
         }
 
         // ✅ (POST) Add a new rating
@@ -67,9 +69,11 @@ namespace Skill_Exchange.API.Controllers
         public async Task<IActionResult> AddRating([FromBody] AddRatingAndFeedbackDto dto)
         {
             var result = await _mediator.Send(new Add<RatingAndFeedback, AddRatingAndFeedbackDto, RatingDetailsDto>(dto));
+
             if (!result.Success)
                 return BadRequest(result.Error);
-            return Ok(result.Data);
+
+            return Ok("Rating added successfully");
         }
 
         // ✅ (PUT) Update existing rating
@@ -81,18 +85,19 @@ namespace Skill_Exchange.API.Controllers
             if (!result.Success)
                 return BadRequest(result.Error);
 
-            return Ok(result.Data); 
+            return Ok("Rating updated successfully");
         }
-
 
         // ✅ (DELETE) Delete a rating
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> DeleteRating(Guid id)
         {
             var result = await _mediator.Send(new Delete<RatingAndFeedback>(id));
+
             if (!result.Success)
                 return NotFound(result.Error);
-            return Ok(result.Error);
+
+            return Ok("Rating deleted successfully");
         }
     }
 }
