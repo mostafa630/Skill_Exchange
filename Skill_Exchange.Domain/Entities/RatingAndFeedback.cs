@@ -12,7 +12,7 @@ namespace Skill_Exchange.Domain.Entities
         public DateTime CreatedAt { get; set; }
         [Range(1, 5)]
         public int? Score { get; set; }
-        public string Feedback { get; set; }
+        public string? Feedback { get; set; }
 
         //Navigation properties
         public Guid? FromUserId { get; set; }
