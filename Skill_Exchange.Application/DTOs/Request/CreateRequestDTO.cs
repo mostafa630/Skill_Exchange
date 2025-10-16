@@ -8,9 +8,11 @@ namespace Skill_Exchange.Application.DTOs.Request
     {
         [JsonIgnore]
         public RequestStatus Status { get; set; } = RequestStatus.Pending;
-        public DateTime CreatedAt { get; set; }
+        [JsonIgnore] 
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         [JsonIgnore]
         public DateTime? RespondedAt { get; set; } = null;
+
         //Navigation properties
         public Guid SenderId { get; set; }
         public Guid RecieverId { get; set; }
