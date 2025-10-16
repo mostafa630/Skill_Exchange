@@ -9,6 +9,7 @@ namespace Skill_Exchange.Application.DTOs.RatingAndFeedback
 {
     public class UpdateRatingDto
     {
+        public Guid Id { get; set; }
         public int? Score { get; set; }
         public string? Feedback { get; set; }
     }

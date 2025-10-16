@@ -25,8 +25,4 @@
     <ProjectReference Include="..\Skill_Exchange.Domain\Skill_Exchange.Domain.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Services\RatingAndFeedback\Commands\Handlers\" />
-  </ItemGroup>
-
 </Project>
