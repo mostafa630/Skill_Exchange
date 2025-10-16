@@ -20,8 +20,8 @@ namespace Skill_Exchange.API.Controllers
             _mediator = mediator;
         }
 
-        // ✅ (GET) Get all ratings (admin use)
-        [HttpGet]
+        // Get all ratings (admin)
+        [HttpGet("all")]
         public async Task<IActionResult> GetAllRatings()
         {
             var result = await _mediator.Send(new GetAll<RatingAndFeedback, RatingDetailsDto>(null));
@@ -31,7 +31,7 @@ namespace Skill_Exchange.API.Controllers
             return Ok(result.Data);
         }
 
-        // ✅ (GET) Get a specific rating by ID
+        // Get rating by ID
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetRatingById(Guid id)
         {
@@ -42,7 +42,7 @@ namespace Skill_Exchange.API.Controllers
             return Ok(result.Data);
         }
 
-        // ✅ (GET) Get ratings received by a specific user
+        // Get ratings received by a user
         [HttpGet("received/{userId:guid}")]
         public async Task<IActionResult> GetRatingsReceivedByUser(Guid userId)
         {
@@ -53,7 +53,7 @@ namespace Skill_Exchange.API.Controllers
             return Ok(result.Data); // List<RatingReceivedByUserDto>
         }
 
-        // ✅ (GET) Get ratings given by a specific user
+        // Get ratings given by a user
         [HttpGet("given/{userId:guid}")]
         public async Task<IActionResult> GetRatingsGivenByUser(Guid userId)
         {
@@ -64,36 +64,33 @@ namespace Skill_Exchange.API.Controllers
             return Ok(result.Data); // List<RatingGivenByUserDto>
         }
 
-        // ✅ (POST) Add a new rating
-        [HttpPost]
+        // Add a new rating
+        [HttpPost("add")]
         public async Task<IActionResult> AddRating([FromBody] AddRatingAndFeedbackDto dto)
         {
             var result = await _mediator.Send(new Add<RatingAndFeedback, AddRatingAndFeedbackDto, RatingDetailsDto>(dto));
-
             if (!result.Success)
                 return BadRequest(result.Error);
 
             return Ok("Rating added successfully");
         }
 
-        // ✅ (PUT) Update existing rating
-        [HttpPut("{id:guid}")]
+        // Update an existing rating
+        [HttpPut("update/{id:guid}")]
         public async Task<IActionResult> UpdateRating(Guid id, [FromBody] UpdateRatingDto dto)
         {
             var result = await _mediator.Send(new UpdateRatingAndFeedback(id, dto));
-
             if (!result.Success)
                 return BadRequest(result.Error);
 
             return Ok("Rating updated successfully");
         }
 
-        // ✅ (DELETE) Delete a rating
-        [HttpDelete("{id:guid}")]
+        // Delete a rating
+        [HttpDelete("delete/{id:guid}")]
         public async Task<IActionResult> DeleteRating(Guid id)
         {
             var result = await _mediator.Send(new Delete<RatingAndFeedback>(id));
-
             if (!result.Success)
                 return NotFound(result.Error);
 

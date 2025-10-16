@@ -19,8 +19,8 @@ namespace Skill_Exchange.API.Controllers
             _mediator = mediator;
         }
 
-        //  GET: api/SkillCategory
-        [HttpGet]
+        // Get all skill categories
+        [HttpGet("all")]
         public async Task<IActionResult> GetAll()
         {
             var result = await _mediator.Send(new GetAll<SkillCategory, SkillCategoryDTO>(null));
@@ -30,8 +30,8 @@ namespace Skill_Exchange.API.Controllers
             return Ok(result.Data);
         }
 
-        //  GET: api/SkillCategory/{id}
-        [HttpGet("{id}")]
+        // Get category by ID
+        [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
             var result = await _mediator.Send(new GetById<SkillCategory, SkillCategoryDTO>(id));
@@ -41,8 +41,8 @@ namespace Skill_Exchange.API.Controllers
             return Ok(result.Data);
         }
 
-        //  POST: api/SkillCategory
-        [HttpPost]
+        // Add a new category
+        [HttpPost("add")]
         public async Task<IActionResult> Add([FromBody] SkillCategoryDTO dto)
         {
             if (!ModelState.IsValid)
@@ -52,31 +52,29 @@ namespace Skill_Exchange.API.Controllers
             return Ok(created);
         }
 
-        //  PUT: api/SkillCategory
-        [HttpPut]
+        // Update an existing category
+        [HttpPut("update")]
         public async Task<IActionResult> Update([FromBody] SkillCategoryDTO dto)
         {
             if (dto == null || dto.Id == Guid.Empty)
                 return BadRequest("Invalid category data.");
 
             var result = await _mediator.Send(new UpdateSkillCategory(dto));
-
             if (!result.Success)
                 return BadRequest(result.Error);
 
-            return Ok(result.Error);
+            return Ok("Category updated successfully");
         }
 
-        // ✅ DELETE: api/SkillCategory/{id}
-        [HttpDelete("{id}")]
+        // Delete a category by ID
+        [HttpDelete("delete/{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)
         {
             var result = await _mediator.Send(new Delete<SkillCategory>(id));
-
             if (!result.Success)
                 return NotFound(result.Error);
 
-            return Ok(result.Error);
+            return Ok("Category deleted successfully");
         }
     }
 }
