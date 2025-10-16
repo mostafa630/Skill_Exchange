@@ -3,9 +3,9 @@ using Skill_Exchange.Application.DTOs.Notifications;
 using Skill_Exchange.Domain.Entities;
 namespace Skill_Exchange.Application.Mapping
 {
-    public class Notifications : Profile
+    public class NotificationsProfile : Profile
     {
-        public Notifications()
+        public NotificationsProfile()
         {
             CreateMap<Notification, NotificationDto>().ReverseMap();
             CreateMap<Notification, UpdateNotificationDto>().ReverseMap();

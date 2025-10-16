@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using MediatR;
 using Skill_Exchange.Application.DTOs;
-using Skill_Exchange.Application.DTOs.RatingAndFeedback;
 using Skill_Exchange.Domain.Entities;
 using Skill_Exchange.Domain.Interfaces;
 
@@ -22,14 +21,15 @@ namespace Skill_Exchange.Application.Services.RatingAndFeedback.Commands.Handler
         public async Task<Result<string>> Handle(UpdateRatingAndFeedback request, CancellationToken cancellationToken)
         {
             var repo = _unitOfWork.RatingsAndFeedbacks;
-            var dto = request.updateRatingDto;
 
-            var existing = await repo.GetByIdAsync(dto.Id);
+            // Fetch entity by id
+            var existing = await repo.GetByIdAsync(request.Id);
             if (existing == null)
                 return Result<string>.Fail("Rating not found.");
 
-            existing.Score = dto.Score;
-            existing.Feedback = dto.Feedback;
+            // Apply updates
+            existing.Score = request.UpdateRatingDto.Score;
+            existing.Feedback = request.UpdateRatingDto.Feedback;
 
             var updated = await repo.UpdateAsync(existing);
             if (!updated)
@@ -38,6 +38,5 @@ namespace Skill_Exchange.Application.Services.RatingAndFeedback.Commands.Handler
             await _unitOfWork.CompleteAsync();
             return Result<string>.Ok("Rating updated successfully.");
         }
-
     }
 }

@@ -22,6 +22,16 @@ namespace Skill_Exchange.API.Controllers
             _mediator = mediator;
         }
 
+        // ✅ (GET) Get all ratings (admin use)
+        [HttpGet]
+        public async Task<IActionResult> GetAllRatings()
+        {
+            var result = await _mediator.Send(new GetAll<RatingAndFeedback, RatingDetailsDto>(null));
+            if (!result.Success)
+                return NotFound(result.Error);
+            return Ok(result.Data);
+        }
+
         // ✅ (GET) Get a specific rating by ID
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetRatingById(Guid id)
@@ -66,12 +76,14 @@ namespace Skill_Exchange.API.Controllers
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> UpdateRating(Guid id, [FromBody] UpdateRatingDto dto)
         {
-            dto.Id = id;
-            var result = await _mediator.Send(new UpdateRatingAndFeedback(dto));
+            var result = await _mediator.Send(new UpdateRatingAndFeedback(id, dto));
+
             if (!result.Success)
                 return BadRequest(result.Error);
-            return Ok(result.Error);
+
+            return Ok(result.Data); 
         }
+
 
         // ✅ (DELETE) Delete a rating
         [HttpDelete("{id:guid}")]

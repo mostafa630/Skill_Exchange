@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Skill_Exchange.Application.DTOs;
 using Skill_Exchange.Application.DTOs.Notifications;
+using Skill_Exchange.Application.DTOs.RatingAndFeedback;
 using Skill_Exchange.Application.DTOs.Request;
 using Skill_Exchange.Application.DTOs.Skill;
 using Skill_Exchange.Application.DTOs.Skill_Category;
@@ -14,6 +15,10 @@ using Skill_Exchange.Application.Services.Notifications.Commands;
 using Skill_Exchange.Application.Services.Notifications.Commands.Handlers;
 using Skill_Exchange.Application.Services.Notifications.Queries;
 using Skill_Exchange.Application.Services.Notifications.Queries.Handlers;
+using Skill_Exchange.Application.Services.RatingAndFeedback.Commands;
+using Skill_Exchange.Application.Services.RatingAndFeedback.Commands.Handlers;
+using Skill_Exchange.Application.Services.RatingAndFeedback.Queries;
+using Skill_Exchange.Application.Services.RatingAndFeedback.Queries.Handlers;
 using Skill_Exchange.Application.Services.Skill.Commands;
 using Skill_Exchange.Application.Services.Skill.Commands.Handlers;
 using Skill_Exchange.Application.Services.SkillCategory.Commands;
@@ -32,7 +37,8 @@ namespace Skill_Exchange.API
             .AddSkillCategoryHandlers()
             .AddRequestHandlers()
             .AddNotificationHandlers()
-            .AddUserSkillHandlers();
+            .AddUserSkillHandlers()
+            .AddRatingAndFeedbackHandlers();
             return services;
         }
         public static IServiceCollection AddUserHandlers(this IServiceCollection services)
@@ -87,7 +93,19 @@ namespace Skill_Exchange.API
 
             return services;
         }
+        // ---------------- RATING & FEEDBACK ----------------
+        private static IServiceCollection AddRatingAndFeedbackHandlers(this IServiceCollection services)
+        {
+            services.AddTransient<IRequestHandler<GetAll<RatingAndFeedback, RatingDetailsDto>, Result<IEnumerable<RatingDetailsDto>>>, GetAllHandler<RatingAndFeedback, RatingDetailsDto>>();
+            services.AddTransient<IRequestHandler<GetById<RatingAndFeedback, RatingDetailsDto>, Result<RatingDetailsDto>>, GetByIdHandler<RatingAndFeedback, RatingDetailsDto>>();
+            services.AddTransient<IRequestHandler<Add<RatingAndFeedback, AddRatingAndFeedbackDto, RatingDetailsDto>, Result<RatingDetailsDto>>, AddHandler<RatingAndFeedback, AddRatingAndFeedbackDto, RatingDetailsDto>>();
+            services.AddTransient<IRequestHandler<Delete<RatingAndFeedback>, Result<string>>, DeleteHandler<RatingAndFeedback>>();
+            services.AddTransient<IRequestHandler<GetRatingsReceivedByUserQuery, Result<List<UserRatingsDto>>>, GetRatingsReceivedByUserHandler>();
+            services.AddTransient<IRequestHandler<GetRatingsGivenByUserQuery, Result<List<UserRatingsDto>>>, GetRatingsGivenByUserHandler>();
+            services.AddTransient<IRequestHandler<UpdateRatingAndFeedback, Result<string>>, UpdateRatingAndFeedbackHandler>();
 
+            return services;
+        }
 
     }
 }

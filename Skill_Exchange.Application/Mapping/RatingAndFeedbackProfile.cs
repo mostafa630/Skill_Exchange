@@ -1,10 +1,11 @@
 ﻿using AutoMapper;
 using Skill_Exchange.Application.DTOs.RatingAndFeedback;
+using Skill_Exchange.Domain.Entities;
 namespace Skill_Exchange.Application.Mapping
 {
-    public class RatingAndFeedback:Profile
+    public class RatingAndFeedbackProfile:Profile
     {
-        public RatingAndFeedback()
+        public RatingAndFeedbackProfile()
         {
             CreateMap<RatingAndFeedback,AddRatingAndFeedbackDto>().ReverseMap();
             CreateMap<RatingAndFeedback,UpdateRatingDto>().ReverseMap();

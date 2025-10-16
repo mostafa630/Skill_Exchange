@@ -34,10 +34,11 @@ namespace Skill_Exchange.Application.Services.GlobalCommands.Handlers
                     return Result<TCreateResponseDTO>.Fail("Adding Operation Failed");
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                return Result<TCreateResponseDTO>.Fail("Adding Operation Failed");
+                return Result<TCreateResponseDTO>.Fail($"Adding operation failed: {ex.Message}");
             }
+
         }
     }
 }

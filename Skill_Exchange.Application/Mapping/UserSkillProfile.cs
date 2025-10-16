@@ -8,9 +8,9 @@ using Skill_Exchange.Domain.Entities;
 
 namespace Skill_Exchange.Application.Mapping
 {
-    public class UserSkill : Profile
+    public class UserSkillProfile : Profile
     {
-        public UserSkill()
+        public UserSkillProfile()
         {
             CreateMap<AddUserSkillDTO, UserSkills>().ReverseMap();
 
