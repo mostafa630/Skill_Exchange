@@ -45,6 +45,13 @@ namespace Skill_Exchange.Application.Specifications
                 else
                     userSpec.And(u => u.ProfileImageUrl == null || u.ProfileImageUrl == "");
             }
+            if (filter.isFriend.HasValue)
+            {
+                if (filter.isFriend == true)
+                    userSpec.And(u => u.FriendOf.Any(f => f.Id == filter.UserId));
+                else
+                    userSpec.And(u => !u.FriendOf.Any(f => f.Id == filter.UserId));
+            }
             return userSpec;
         }
 
