@@ -15,9 +15,9 @@ namespace Skill_Exchange.Application.DTOs.RatingAndFeedback
         public DateTime CreatedAt { get; set; }
 
         public Guid? FromUserId { get; set; }
-        public string? FromUserName { get; set; }
+        //public string? FromUserName { get; set; }
 
         public Guid? ToUserId { get; set; }
-        public string? ToUserName { get; set; }
+        //public string? ToUserName { get; set; }
     }
 }

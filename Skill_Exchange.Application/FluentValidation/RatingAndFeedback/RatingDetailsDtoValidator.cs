@@ -20,19 +20,19 @@ namespace Skill_Exchange.Application.FluentValidation.RatingAndFeedback
                 .NotEmpty()
                 .WithMessage("FromUserId is required.");
 
-            RuleFor(x => x.FromUserName)
+            /*RuleFor(x => x.FromUserName)
                 .MaximumLength(100)
                 .When(x => !string.IsNullOrEmpty(x.FromUserName))
-                .WithMessage("FromUserName cannot exceed 100 characters.");
+                .WithMessage("FromUserName cannot exceed 100 characters.");*/
 
             RuleFor(x => x.ToUserId)
                 .NotEmpty()
                 .WithMessage("ToUserId is required.");
 
-            RuleFor(x => x.ToUserName)
+            /*RuleFor(x => x.ToUserName)
                 .MaximumLength(100)
                 .When(x => !string.IsNullOrEmpty(x.ToUserName))
-                .WithMessage("ToUserName cannot exceed 100 characters.");
+                .WithMessage("ToUserName cannot exceed 100 characters.");*/
 
             RuleFor(x => x.CreatedAt)
                 .NotEqual(default(DateTime))

@@ -14,10 +14,10 @@ namespace Skill_Exchange.Application.Mapping
 
             // Details mapping
             CreateMap<RatingAndFeedback, RatingDetailsDto>()
-                .ForMember(dest => dest.FromUserName,
+               /* .ForMember(dest => dest.FromUserName,
                            opt => opt.MapFrom(src => $"{src.FromUser.FirstName} {src.FromUser.LastName}".Trim()))
                 .ForMember(dest => dest.ToUserName,
-                           opt => opt.MapFrom(src => $"{src.ToUser.FirstName} {src.ToUser.LastName}".Trim()))
+                           opt => opt.MapFrom(src => $"{src.ToUser.FirstName} {src.ToUser.LastName}".Trim()))*/
                 .ReverseMap();
 
             // Ratings given by user
