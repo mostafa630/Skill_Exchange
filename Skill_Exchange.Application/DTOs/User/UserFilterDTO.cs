@@ -26,6 +26,8 @@ namespace Skill_Exchange.Application.DTOs.User
         public DateTime? ActiveBefore { get; set; }
 
         public bool? HasProfileImage { get; set; }
-        public bool? GetFriends { get; set; }
+        public bool? GetFriendsIadded { get; set; } // means I send them request and they accept
+        public bool? GetFriendsAddedMe { get; set; }// means they send me request and I accept
+
     }
 }

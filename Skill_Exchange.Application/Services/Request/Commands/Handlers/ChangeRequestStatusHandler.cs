@@ -20,7 +20,6 @@ namespace Skill_Exchange.Application.Services.Request.Commands.Handlers
                 var _request = await _unitOfWork.Requests.GetRequestBetweenAsync(request.user1Id, request.user2Id);
                 if (_request is null)
                 {
-
                     return Result<string>.Fail("There is no request between users");
                 }
                 _request.Status = request.changeRequestStatusDTO.Status;

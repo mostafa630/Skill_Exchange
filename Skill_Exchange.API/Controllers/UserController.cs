@@ -64,6 +64,14 @@ namespace Skill_Exchange.API.Controllers
             return response.Success ? Ok(response.Data) : BadRequest(response.Error);
         }
 
+        [HttpGet("are-friends/{user1Id:Guid}/{user2Id:Guid}")]
+        public async Task<ActionResult<IEnumerable<UserDTO>>> AreUsersFriends([FromRoute] Guid user1Id, [FromRoute] Guid user2Id)
+        {
+            var query = new AreFriends(user1Id, user2Id);
+            var response = await _mediator.Send(query);
+            return response.Success ? Ok(response.Data) : BadRequest(response.Error);
+        }
+
         //-------------------------------------------------------------------------//
         //                            Put Endpoints                               //
         //-------------------------------------------------------------------------//

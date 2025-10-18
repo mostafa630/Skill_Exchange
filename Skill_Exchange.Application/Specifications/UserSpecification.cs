@@ -54,15 +54,31 @@ namespace Skill_Exchange.Application.Specifications
                 else
                     userSpec.And(u => u.ProfileImageUrl == null || u.ProfileImageUrl == "");
             }
-            if (filter.GetFriends.HasValue)
-            {
-                if (filter.GetFriends == true)
-                    userSpec.And(u => u.Friends.Any(f => f.Id == filter.UserId)
-                    || u.FriendOf.Any(f => f.Id == filter.UserId));
 
-                else
-                    userSpec.And(u => !u.Friends.Any(f => f.Id == filter.UserId)
-                    && !u.FriendOf.Any(f => f.Id == filter.UserId));
+            // Filter using Firend relationships
+            if (filter.GetFriendsIadded == true && filter.GetFriendsAddedMe == true)
+            {
+                // Get users I added OR users who added me
+                userSpec.And(u =>
+                    u.Friends.Any(f => f.Id == filter.UserId) ||
+                    u.FriendOf.Any(f => f.Id == filter.UserId));
+            }
+            else if (filter.GetFriendsIadded == true)
+            {
+                // I added them → they have me in FriendOf
+                userSpec.And(u => u.FriendOf.Any(f => f.Id == filter.UserId));
+            }
+            else if (filter.GetFriendsAddedMe == true)
+            {
+                // They added me → they have me in Friends
+                userSpec.And(u => u.Friends.Any(f => f.Id == filter.UserId));
+            }
+            else if (filter.GetFriendsIadded == false && filter.GetFriendsAddedMe == false)
+            {
+                // Neither added nor added me — users I have no friend relationship with
+                userSpec.And(u =>
+                    !u.Friends.Any(f => f.Id == filter.UserId) &&
+                    !u.FriendOf.Any(f => f.Id == filter.UserId));
             }
             return userSpec;
         }
