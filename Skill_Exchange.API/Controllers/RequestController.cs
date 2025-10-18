@@ -72,6 +72,7 @@ namespace Skill_Exchange.API.Controllers
         [HttpPost("api/add")]
         public async Task<ActionResult<RequestDTO>> Add(CreateRequestDTO createRequestDTO)
         {
+            createRequestDTO.CreatedAt = DateTime.UtcNow;
             var command = new Add<Request, CreateRequestDTO, RequestDTO>(createRequestDTO);
             var response = await _mediator.Send(command);
 

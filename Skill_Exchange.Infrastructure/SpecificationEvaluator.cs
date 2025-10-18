@@ -31,7 +31,6 @@ namespace Skill_Exchange.Infrastructure
                     query = query.Take(spec.Take.Value);
             }
             return query;
-
         }
     }
 }

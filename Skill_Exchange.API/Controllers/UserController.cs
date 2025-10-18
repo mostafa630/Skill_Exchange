@@ -53,13 +53,22 @@ namespace Skill_Exchange.API.Controllers
         }
 
 
-        [HttpGet("all")]
-        public async Task<ActionResult<IEnumerable<UserDTO>>> GetAll([FromQuery] UserFilterDTO userFilterDTO)
+        [HttpGet("all/{userId:Guid}")]
+        public async Task<ActionResult<IEnumerable<UserDTO>>> GetAll([FromRoute] Guid userId, [FromQuery] UserFilterDTO userFilterDTO, [FromQuery] UserIncludesDTO userIncludesDTO)
         {
-            var userSpec = UserSpecification.Build(userFilterDTO);
+            userFilterDTO.UserId = userId;
+            var userSpec = UserSpecification.Build(userFilterDTO, userIncludesDTO);
             var query = new GetAll<AppUser, UserDTO>(userSpec);
             var response = await _mediator.Send(query);
 
+            return response.Success ? Ok(response.Data) : BadRequest(response.Error);
+        }
+
+        [HttpGet("are-friends/{user1Id:Guid}/{user2Id:Guid}")]
+        public async Task<ActionResult<IEnumerable<UserDTO>>> AreUsersFriends([FromRoute] Guid user1Id, [FromRoute] Guid user2Id)
+        {
+            var query = new AreFriends(user1Id, user2Id);
+            var response = await _mediator.Send(query);
             return response.Success ? Ok(response.Data) : BadRequest(response.Error);
         }
 
