@@ -32,36 +32,26 @@ namespace Skill_Exchange.API.Controllers
             return response.Success ? Ok(response.Data) : BadRequest(response.Error);
         }
 
-        [HttpGet("api/sendedBy")]
-        public async Task<ActionResult<IEnumerable<RequestDTO>>> GetRequestsSendedBy(string SenderId)
+        [HttpGet("api/sendedBy/{SenderId:Guid}")]
+        public async Task<ActionResult<IEnumerable<RequestDTO>>> GetRequestsSendedBy(Guid SenderId)
         {
-            if (String.IsNullOrEmpty(SenderId.ToString()) || !Guid.TryParse(SenderId, out _))
-            {
-                return BadRequest("Invalid Id");
-            }
-
-            var query = new GetRequestsSended(Guid.Parse(SenderId));
+            var query = new GetRequestsSended(SenderId);
             var response = await _mediator.Send(query);
             return response.Success ? Ok(response.Data) : BadRequest(response.Error);
         }
 
-        [HttpGet("api/receiveddBy")]
-        public async Task<ActionResult<IEnumerable<RequestDTO>>> GetRequestsReceiveddBy(string RecieverId)
+        [HttpGet("api/receiveddBy/{RecieverId:Guid}")]
+        public async Task<ActionResult<IEnumerable<RequestDTO>>> GetRequestsReceiveddBy(Guid RecieverId)
         {
-            if (String.IsNullOrEmpty(RecieverId.ToString()) || !Guid.TryParse(RecieverId, out _))
-            {
-                return BadRequest("Invalid Id");
-            }
-
-            var query = new GetRequestsReceived(Guid.Parse(RecieverId));
+            var query = new GetRequestsReceived(RecieverId);
             var response = await _mediator.Send(query);
             return response.Success ? Ok(response.Data) : BadRequest(response.Error);
         }
 
-        [HttpGet("api/between")]
-        public async Task<ActionResult<RequestDTO>> GetRequestBetween(BetweenDto betweenDto)
+        [HttpGet("api/between/{user1Id:Guid}/{user2Id:Guid}")]
+        public async Task<ActionResult<RequestDTO>> GetRequestBetween([FromRoute] Guid user1Id, [FromRoute] Guid user2Id)
         {
-            var query = new GetRequestBetween(betweenDto);
+            var query = new GetRequestBetween(new BetweenDto { User1Id = user1Id, User2Id = user2Id });
             var response = await _mediator.Send(query);
             return response.Success ? Ok(response.Data) : BadRequest(response.Error);
         }
