@@ -26,6 +26,6 @@ namespace Skill_Exchange.Application.DTOs.User
         public DateTime? ActiveBefore { get; set; }
 
         public bool? HasProfileImage { get; set; }
-        public bool? isFriend { get; set; }
+        public bool? GetFriends { get; set; }
     }
 }

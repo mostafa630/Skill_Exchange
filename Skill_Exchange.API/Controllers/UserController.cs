@@ -53,11 +53,11 @@ namespace Skill_Exchange.API.Controllers
         }
 
 
-        [HttpGet("all/{userId : Guid}")]
-        public async Task<ActionResult<IEnumerable<UserDTO>>> GetAll([FromRoute] Guid userId, [FromQuery] UserFilterDTO userFilterDTO)
+        [HttpGet("all/{userId:Guid}")]
+        public async Task<ActionResult<IEnumerable<UserDTO>>> GetAll([FromRoute] Guid userId, [FromQuery] UserFilterDTO userFilterDTO, [FromQuery] UserIncludesDTO userIncludesDTO)
         {
             userFilterDTO.UserId = userId;
-            var userSpec = UserSpecification.Build(userFilterDTO);
+            var userSpec = UserSpecification.Build(userFilterDTO, userIncludesDTO);
             var query = new GetAll<AppUser, UserDTO>(userSpec);
             var response = await _mediator.Send(query);
 
