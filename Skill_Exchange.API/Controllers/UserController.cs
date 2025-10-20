@@ -7,6 +7,7 @@ using Skill_Exchange.Application.Interfaces;
 using Skill_Exchange.Application.Services.GlobalQuery;
 using Skill_Exchange.Application.Services.User.Commands;
 using Skill_Exchange.Application.Services.User.Queries;
+using Skill_Exchange.Application.Services.Users.Queries;
 using Skill_Exchange.Application.Specifications;
 using Skill_Exchange.Domain.Entities;
 
@@ -71,6 +72,28 @@ namespace Skill_Exchange.API.Controllers
             var response = await _mediator.Send(query);
             return response.Success ? Ok(response.Data) : BadRequest(response.Error);
         }
+
+        [HttpPost("suggest/{userId:guid}")]
+        public async Task<IActionResult> SuggestMatches(Guid userId, [FromBody] MatchingRequestDTO? dto)
+        {
+            if (userId == Guid.Empty)
+                return BadRequest("Invalid user ID.");
+
+            var query = new GetMatchingUsers(
+                userId,
+                dto?.SkillsToLearn,
+                dto?.Top ?? 20
+            );
+
+            var matches = await _mediator.Send(query);
+
+            if (matches == null || !matches.Any())
+                return NotFound("No matching users found.");
+
+            return Ok(matches);
+        }
+
+
 
         //-------------------------------------------------------------------------//
         //                            Put Endpoints                               //
