@@ -29,6 +29,32 @@ namespace Skill_Exchange.Application.Mapping
             CreateMap<RatingAndFeedback, RatingReceivedByUserDto>()
                 .ForMember(dest => dest.FromUserName,
                            opt => opt.MapFrom(src => $"{src.FromUser.FirstName} {src.FromUser.LastName}".Trim()));
+
+            // Individual user feedback mapping
+            CreateMap<RatingAndFeedback, UserFeedbackDto>()
+                .ForMember(dest => dest.FromUserName,
+                    opt => opt.MapFrom(src => $"{src.FromUser.FirstName} {src.FromUser.LastName}".Trim()))
+                .ForMember(dest => dest.Score, opt => opt.MapFrom(src => src.Score))
+                .ForMember(dest => dest.Feedback, opt => opt.MapFrom(src => src.Feedback))
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt));
+
+            // User rating summary
+            CreateMap<List<RatingAndFeedback>, UserRatingSummaryDto>()
+                .ConvertUsing(src => new UserRatingSummaryDto
+                {
+                    AverageScore = src.Any(r => r.Score.HasValue)
+                        ? Math.Round(src.Where(r => r.Score.HasValue).Average(r => r.Score!.Value), 2)
+                        : 0,
+                    TotalRatings = src.Count,
+                    Feedbacks = src.Select(r => new UserFeedbackDto
+                    {
+                        FromUserName = $"{r.FromUser.FirstName} {r.FromUser.LastName}".Trim(),
+                        Score = r.Score,
+                        Feedback = r.Feedback,
+                        CreatedAt = r.CreatedAt
+                    }).ToList()
+                });
+
         }
     }
 }

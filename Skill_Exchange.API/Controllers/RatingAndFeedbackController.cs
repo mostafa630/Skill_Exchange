@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Skill_Exchange.Application.DTOs.RatingAndFeedback;
 using Skill_Exchange.Application.Services.GlobalCommands;
 using Skill_Exchange.Application.Services.GlobalQuery;
+using Skill_Exchange.Application.Services.RatingAndFeedback;
 using Skill_Exchange.Application.Services.RatingAndFeedback.Commands;
 using Skill_Exchange.Application.Services.RatingAndFeedback.Queries;
 using Skill_Exchange.Domain.Entities;
@@ -64,6 +65,17 @@ namespace Skill_Exchange.API.Controllers
             return Ok(result.Data); // List<RatingGivenByUserDto>
         }
 
+        // Get user rating summary
+        [HttpGet("summary/{userId:guid}")]
+        public async Task<IActionResult> GetUserRatingSummary(Guid userId)
+        {
+            var result = await _mediator.Send(new GetUserRatingSummary(userId));
+            if (!result.Success)
+                return NotFound(result.Error);
+
+            return Ok(result.Data); // UserRatingSummaryDto
+        }
+
         // Add a new rating
         [HttpPost("add")]
         public async Task<IActionResult> AddRating([FromBody] AddRatingAndFeedbackDto dto)
@@ -96,5 +108,6 @@ namespace Skill_Exchange.API.Controllers
 
             return Ok("Rating deleted successfully");
         }
+
     }
 }

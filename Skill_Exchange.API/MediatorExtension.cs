@@ -15,8 +15,10 @@ using Skill_Exchange.Application.Services.Notifications.Commands;
 using Skill_Exchange.Application.Services.Notifications.Commands.Handlers;
 using Skill_Exchange.Application.Services.Notifications.Queries;
 using Skill_Exchange.Application.Services.Notifications.Queries.Handlers;
+using Skill_Exchange.Application.Services.RatingAndFeedback;
 using Skill_Exchange.Application.Services.RatingAndFeedback.Commands;
 using Skill_Exchange.Application.Services.RatingAndFeedback.Commands.Handlers;
+using Skill_Exchange.Application.Services.RatingAndFeedback.Handlers;
 using Skill_Exchange.Application.Services.RatingAndFeedback.Queries;
 using Skill_Exchange.Application.Services.RatingAndFeedback.Queries.Handlers;
 using Skill_Exchange.Application.Services.Skill.Commands;
@@ -103,6 +105,7 @@ namespace Skill_Exchange.API
             services.AddTransient<IRequestHandler<GetRatingsReceivedByUserQuery, Result<List<RatingReceivedByUserDto>>>, GetRatingsReceivedByUserHandler>();
             services.AddTransient<IRequestHandler<GetRatingsGivenByUserQuery, Result<List<RatingGivenByUserDto>>>, GetRatingsGivenByUserHandler>();
             services.AddTransient<IRequestHandler<UpdateRatingAndFeedback, Result<string>>, UpdateRatingAndFeedbackHandler>();
+            services.AddTransient<IRequestHandler<GetUserRatingSummary, Result<UserRatingSummaryDto>>, GetUserRatingSummaryHandler>();
 
             return services;
         }
