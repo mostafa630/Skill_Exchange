@@ -45,34 +45,87 @@ namespace Skill_Exchange.Application.Services.Users.Queries
 
                 // 3) Other users' skills to learn
                 var otherUsersSkills = await _unitOfWork.UserSkills
-                    .AsQueryable()
-                    .Where(us => us.UserId != request.UserId) // exclude the current user
-                    .GroupBy(us => us.UserId)
-                    .Select(g => new
+                     .AsQueryable()
+                     .Include(us => us.User) 
+                     .Where(us => us.UserId != request.UserId) 
+                     .GroupBy(us => new
+                     {
+                         us.UserId,
+                         us.User.FirstName,
+                         us.User.LastName,
+                         us.User.ProfileImageUrl
+                     })
+                     .Select(g => new
+                     {
+                         UserId = g.Key.UserId,
+                         FullName = g.Key.FirstName + " " + g.Key.LastName,
+                         ProfileImageUrl = g.Key.ProfileImageUrl,
+                         SkillsToLearn = g
+                             .Where(us => us.Purpose == ExchangePurpose.Learning)
+                             .Select(us => new { us.SkillId, us.YearsOfExperience })
+                             .ToList(),
+                         SkillsToTeach = g
+                             .Where(us => us.Purpose == ExchangePurpose.Teaching)
+                             .Select(us => new { us.SkillId, us.YearsOfExperience })
+                             .ToList()
+                     })
+                     .ToListAsync(cancellationToken);
+                // 4) Calculate match scores
+                var userMatches = new List<UserMatchDTO>();
+                foreach (var otherUser in otherUsersSkills)
+                {
+                    double learnMatch = CalculateSkillMatch(
+                        myLearnSkills.Select(s => (s.SkillId, s.YearsOfExperience)).ToList(),
+                        otherUser.SkillsToTeach.Select(s => (s.SkillId, s.YearsOfExperience)).ToList());
+                    double teachMatch = CalculateSkillMatch(
+                        myTeachSkills.Select(s => (s.SkillId, s.YearsOfExperience)).ToList(),
+                        otherUser.SkillsToLearn.Select(s => (s.SkillId, s.YearsOfExperience)).ToList());
+                    double totalMatch = (learnMatch + teachMatch) / 2.0;
+                    if (totalMatch > 0)
                     {
-                        UserId = g.Key,
-                        SkillsToLearn = g
-                            .Where(us => us.Purpose == ExchangePurpose.Learning)
-                            .Select(us => new { us.SkillId, us.YearsOfExperience })
-                            .ToList(),
-                        SkillsToTeach = g
-                            .Where(us => us.Purpose == ExchangePurpose.Teaching)
-                            .Select(us => new { us.SkillId, us.YearsOfExperience })
-                            .ToList()
-                    })
-                    .ToListAsync(cancellationToken);
+                        userMatches.Add(new UserMatchDTO
+                        {
+                            UserId = otherUser.UserId,
+                            MatchScore = totalMatch,
+                            ImageUrl = otherUser.ProfileImageUrl,
+                            FullName = otherUser.FullName
+                        });
+                    }
+                }
+                userMatches = userMatches
+                    .OrderByDescending(um => um.MatchScore)
+                    .Take(request.Top)
+                    .ToList();
+                return Result<List<UserMatchDTO>>.Ok(userMatches);
             }
             catch
             {
-
+                return Result<List<UserMatchDTO>>.Fail("Failed to get matching users.");
             }
-
-
         }
 
         // ------------------------- Private Helpers ---------------------------- //
-
-        private async Task<List<string>> GetSkillsToLearnAsync(GetMatchingUsers request, AppUser user, IGenericRepository<DomainSkill> skillsRepo)
+        private double CalculateSkillMatch(
+            List<(Guid SkillId, int YearsOfExperience)> mySkills,
+            List<(Guid SkillId, int YearsOfExperience)> otherSkills)
+        {
+            if (!mySkills.Any() || !otherSkills.Any())
+                return 0;
+            var mySkillSet = mySkills.ToDictionary(s => s.SkillId, s => s.YearsOfExperience);
+            var otherSkillSet = otherSkills.ToDictionary(s => s.SkillId, s => s.YearsOfExperience);
+            var intersection = mySkillSet.Keys.Intersect(otherSkillSet.Keys).ToList();
+            if (!intersection.Any())
+                return 0;
+            double score = 0;
+            foreach (var skillId in intersection)
+            {
+                var myExp = mySkillSet[skillId];
+                var otherExp = otherSkillSet[skillId];
+                score += 1.0 / (1 + Math.Abs(myExp - otherExp));
+            }
+            return score / intersection.Count;
+        }
+        /*private async Task<List<string>> GetSkillsToLearnAsync(GetMatchingUsers request, AppUser user, IGenericRepository<DomainSkill> skillsRepo)
         {
             if (request.SkillsToLearn != null && request.SkillsToLearn.Any())
                 return request.SkillsToLearn.Select(s => s.ToLower()).ToList();
@@ -120,6 +173,6 @@ namespace Skill_Exchange.Application.Services.Users.Queries
                 <= 90 => 0.3,
                 _ => 0.1
             };
-        }
+        }*/
     }
 }
