@@ -53,13 +53,13 @@ namespace Skill_Exchange.Application.Services.Users.Queries
                          us.UserId,
                          us.User.FirstName,
                          us.User.LastName,
-                         us.User.ProfileImageUrl
+                         //us.User.ProfileImageUrl
                      })
                      .Select(g => new
                      {
                          UserId = g.Key.UserId,
                          FullName = g.Key.FirstName + " " + g.Key.LastName,
-                         ProfileImageUrl = g.Key.ProfileImageUrl,
+                         //ProfileImageUrl = g.Key.ProfileImageUrl,
                          SkillsToLearn = g
                              .Where(us => us.Purpose == ExchangePurpose.Learning)
                              .Select(us => new { us.SkillId, us.YearsOfExperience })
@@ -81,17 +81,18 @@ namespace Skill_Exchange.Application.Services.Users.Queries
                         myTeachSkills.Select(s => (s.SkillId, s.YearsOfExperience)).ToList(),
                         otherUser.SkillsToLearn.Select(s => (s.SkillId, s.YearsOfExperience)).ToList());
                     double totalMatch = (learnMatch + teachMatch) / 2.0;
-                    if (totalMatch > 0)
+                    if (totalMatch >= 0)
                     {
                         userMatches.Add(new UserMatchDTO
                         {
                             UserId = otherUser.UserId,
                             MatchScore = totalMatch,
-                            ImageUrl = otherUser.ProfileImageUrl,
+                            //ImageUrl = otherUser.ProfileImageUrl,
                             FullName = otherUser.FullName
                         });
                     }
                 }
+                //Console.WriteLine(UserMatchDTO.count);
                 userMatches = userMatches
                     .OrderByDescending(um => um.MatchScore)
                     .Take(request.Top)
