@@ -2,7 +2,7 @@
 {
     public class MatchingRequestDTO
     {
-        public List<string>? SkillsToLearn { get; set; }
+        public List<Guid>? SkillsToLearn { get; set; }
         public int Top { get; set; } = 20;
     }
 }
