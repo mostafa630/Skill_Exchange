@@ -1,3 +1,4 @@
+using Azure;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Org.BouncyCastle.Crypto.Prng.Drbg;
@@ -85,12 +86,9 @@ namespace Skill_Exchange.API.Controllers
                 dto?.Top ?? 20
             );
 
-            var matches = await _mediator.Send(query);
+            var response = await _mediator.Send(query);
 
-            if (matches == null || !matches.Any())
-                return NotFound("No matching users found.");
-
-            return Ok(matches);
+            return response.Success ? Ok(response.Data) : BadRequest(response.Error);
         }
 
 

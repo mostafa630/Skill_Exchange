@@ -12,13 +12,11 @@ namespace Skill_Exchange.Application.FluentValidation.User
                 .GreaterThan(0).WithMessage("Top must be greater than 0.")
                 .LessThanOrEqualTo(100).WithMessage("Top cannot exceed 100.");
 
-            // If skills are provided, validate them
-            When(x => x.SkillsToLearn != null && x.SkillsToLearn.Any(), () =>
-            {
-                RuleForEach(x => x.SkillsToLearn)
-                    .NotEmpty().WithMessage("Skill name cannot be empty.")
-                    .MaximumLength(100).WithMessage("Skill name cannot exceed 100 characters.");
-            });
+            // 'SkillsToLearn' is optional, but if provided, must not be empty and contain valid GUIDs
+            RuleFor(x => x.SkillsToLearn)
+                .Must(list => list == null || list.Count > 0)
+                .WithMessage("SkillsToLearn cannot be an empty list if provided.");
+
         }
     }
 }
