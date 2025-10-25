@@ -53,13 +53,13 @@ namespace Skill_Exchange.Application.Services.Users.Queries
                          us.UserId,
                          us.User.FirstName,
                          us.User.LastName,
-                         //us.User.ProfileImageUrl
+                         us.User.ProfileImageUrl
                      })
                      .Select(g => new
                      {
                          UserId = g.Key.UserId,
                          FullName = g.Key.FirstName + " " + g.Key.LastName,
-                         //ProfileImageUrl = g.Key.ProfileImageUrl,
+                         ProfileImageUrl = g.Key.ProfileImageUrl,
                          SkillsToLearn = g
                              .Where(us => us.Purpose == ExchangePurpose.Learning)
                              .Select(us => new { us.SkillId, us.YearsOfExperience })
@@ -87,12 +87,12 @@ namespace Skill_Exchange.Application.Services.Users.Queries
                         {
                             UserId = otherUser.UserId,
                             MatchScore = totalMatch,
-                            //ImageUrl = otherUser.ProfileImageUrl,
+                            ImageUrl = otherUser.ProfileImageUrl,
                             FullName = otherUser.FullName
                         });
                     }
                 }
-                //Console.WriteLine(UserMatchDTO.count);
+                // 5) Return top matches
                 userMatches = userMatches
                     .OrderByDescending(um => um.MatchScore)
                     .Take(request.Top)
@@ -126,54 +126,5 @@ namespace Skill_Exchange.Application.Services.Users.Queries
             }
             return score / intersection.Count;
         }
-        /*private async Task<List<string>> GetSkillsToLearnAsync(GetMatchingUsers request, AppUser user, IGenericRepository<DomainSkill> skillsRepo)
-        {
-            if (request.SkillsToLearn != null && request.SkillsToLearn.Any())
-                return request.SkillsToLearn.Select(s => s.ToLower()).ToList();
-
-            var userSkills = user.Skills.Where(s => s.Name.ToLower == request.sk);
-            var allSkills = await skillsRepo.GetAllAsync();
-
-            return allSkills
-                .Select(s => s.Name.ToLower())
-                .Except(userSkills)
-                .Take(5)
-                .ToList();
-        }
-
-        private double CalculateMatchScore(AppUser targetUser, AppUser otherUser, List<string> skillsToLearn)
-        {
-            double teachMatch = CalculateTeachMatch(otherUser, skillsToLearn);
-            double activityScore = CalculateActivityScore(otherUser.LastActiveAt);
-            double friendshipPenalty = targetUser.Friends.Any(f => f.Id == otherUser.Id) ? -0.2 : 0;
-
-            double totalScore = (teachMatch * 0.7) + (activityScore * 0.3) + friendshipPenalty;
-            return Math.Max(0, Math.Min(totalScore, 1));
-        }
-
-        private double CalculateTeachMatch(AppUser otherUser, List<string> skillsToLearn)
-        {
-            if (!otherUser.Skills.Any() || !skillsToLearn.Any())
-                return 0;
-
-            var otherSkills = otherUser.Skills.Select(s => s.Name.ToLower()).ToHashSet();
-            var intersection = otherSkills.Intersect(skillsToLearn).Count();
-            var union = otherSkills.Union(skillsToLearn).Count();
-
-            return union == 0 ? 0 : (double)intersection / union;
-        }
-
-        private double CalculateActivityScore(DateTime lastActive)
-        {
-            var days = (DateTime.UtcNow - lastActive).TotalDays;
-            return days switch
-            {
-                <= 1 => 1.0,
-                <= 7 => 0.8,
-                <= 30 => 0.5,
-                <= 90 => 0.3,
-                _ => 0.1
-            };
-        }*/
     }
 }
