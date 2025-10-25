@@ -5,7 +5,7 @@ using Skill_Exchange.Domain.Entities;
 using Skill_Exchange.Domain.Enums;
 using Skill_Exchange.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using DomainSkill = Skill_Exchange.Domain.Entities.Skill; 
+using DomainSkill = Skill_Exchange.Domain.Entities.Skill;
 
 namespace Skill_Exchange.Application.Services.Users.Queries
 {
@@ -44,63 +44,30 @@ namespace Skill_Exchange.Application.Services.Users.Queries
                     .ToListAsync(cancellationToken);
 
                 // 3) Other users' skills to learn
-                var usersLearnSkills = await _unitOfWork.UserSkills
+                var otherUsersSkills = await _unitOfWork.UserSkills
                     .AsQueryable()
-                    .Where(us => us.Purpose == ExchangePurpose.Learning
-                                 && us.UserId != request.UserId) 
-                    .Select(us => new { us.UserId, us.SkillId, us.YearsOfExperience })
-                    .ToListAsync(cancellationToken);
-
-                // 4) Other users' skills to teach
-                var usersTeachSkills = await _unitOfWork.UserSkills
-                    .AsQueryable()
-                    .Where(us => us.Purpose == ExchangePurpose.Teaching
-                                 && us.UserId != request.UserId) 
-                    .Select(us => new { us.UserId, us.SkillId, us.YearsOfExperience })
-                    .ToListAsync(cancellationToken);
-
-
-
-
-                /*var usersRepo = _unitOfWork.Users;
-                var skillsRepo = _unitOfWork.GetRepository<DomainSkill>();
-
-                var targetUser = await usersRepo.GetByIdAsync(request.UserId);
-                if (targetUser == null)
-                    return Result<List<UserMatchDTO>>.Fail("User not found.");
-
-                var skillsToLearn = await GetSkillsToLearnAsync(request, targetUser, skillsRepo);
-                var allUsers = await usersRepo.GetAllAsync();
-
-                var matches = new List<UserMatchDTO>();
-
-                foreach (var user in allUsers.Where(u => u.Id != request.UserId))
-                {
-                    double matchScore = CalculateMatchScore(targetUser, user, skillsToLearn);
-                    if (matchScore > 0)
+                    .Where(us => us.UserId != request.UserId) // exclude the current user
+                    .GroupBy(us => us.UserId)
+                    .Select(g => new
                     {
-                        matches.Add(new UserMatchDTO
-                        {
-                            UserId = user.Id,
-                            FullName = $"{user.FirstName} {user.LastName}",
-                            MatchScore = matchScore,
-                            Skills = user.Skills.Select(s => s.Name).ToList(),
-                            LastActiveAt = user.LastActiveAt
-                        });
-                    }
-                }
-
-                var orderedMatches = matches
-                    .OrderByDescending(m => m.MatchScore)
-                    .Take(request.Top)
-                    .ToList();
-
-                return Result<List<UserMatchDTO>>.Ok(orderedMatches);
+                        UserId = g.Key,
+                        SkillsToLearn = g
+                            .Where(us => us.Purpose == ExchangePurpose.Learning)
+                            .Select(us => new { us.SkillId, us.YearsOfExperience })
+                            .ToList(),
+                        SkillsToTeach = g
+                            .Where(us => us.Purpose == ExchangePurpose.Teaching)
+                            .Select(us => new { us.SkillId, us.YearsOfExperience })
+                            .ToList()
+                    })
+                    .ToListAsync(cancellationToken);
             }
-            catch (Exception ex)
+            catch
             {
-                return Result<List<UserMatchDTO>>.Fail($"An error occurred while fetching matches: {ex.Message}");
-            }*/
+
+            }
+
+
         }
 
         // ------------------------- Private Helpers ---------------------------- //
@@ -110,7 +77,7 @@ namespace Skill_Exchange.Application.Services.Users.Queries
             if (request.SkillsToLearn != null && request.SkillsToLearn.Any())
                 return request.SkillsToLearn.Select(s => s.ToLower()).ToList();
 
-            var userSkills = user.Skills.Where(s=>s.Name.ToLower==request.sk);
+            var userSkills = user.Skills.Where(s => s.Name.ToLower == request.sk);
             var allSkills = await skillsRepo.GetAllAsync();
 
             return allSkills
