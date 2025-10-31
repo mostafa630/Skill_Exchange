@@ -2,6 +2,7 @@ using Azure;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Org.BouncyCastle.Crypto.Prng.Drbg;
+using Skill_Exchange.Application.DTOs;
 using Skill_Exchange.Application.DTOs.Auth;
 using Skill_Exchange.Application.DTOs.User;
 using Skill_Exchange.Application.Interfaces;
@@ -56,10 +57,10 @@ namespace Skill_Exchange.API.Controllers
 
 
         [HttpGet("all/{userId:Guid}")]
-        public async Task<ActionResult<IEnumerable<UserDTO>>> GetAll([FromRoute] Guid userId, [FromQuery] UserFilterDTO userFilterDTO, [FromQuery] UserIncludesDTO userIncludesDTO)
+        public async Task<ActionResult<IEnumerable<UserDTO>>> GetAll([FromRoute] Guid userId, [FromQuery] UserFilterDTO userFilterDTO, [FromQuery] UserIncludesDTO userIncludesDTO, [FromQuery] PaginationDto paginationDto)
         {
             userFilterDTO.UserId = userId;
-            var userSpec = UserSpecification.Build(userFilterDTO, userIncludesDTO);
+            var userSpec = UserSpecification.Build(userFilterDTO, userIncludesDTO, paginationDto);
             var query = new GetAll<AppUser, UserDTO>(userSpec);
             var response = await _mediator.Send(query);
 
@@ -75,7 +76,7 @@ namespace Skill_Exchange.API.Controllers
         }
 
         [HttpPost("suggest/{userId:guid}")]
-        public async Task<IActionResult> SuggestMatches(Guid userId, [FromBody] MatchingRequestDTO? dto)
+        public async Task<IActionResult> SuggestMatches(Guid userId, [FromBody] MatchingRequestDTO? dto, [FromQuery] PaginationDto paginationDto)
         {
             if (userId == Guid.Empty)
                 return BadRequest("Invalid user ID.");
@@ -83,7 +84,7 @@ namespace Skill_Exchange.API.Controllers
             var query = new GetMatchingUsers(
                 userId,
                 dto?.SkillsToLearn,
-                dto?.Top ?? 20
+                paginationDto
             );
 
             var response = await _mediator.Send(query);

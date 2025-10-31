@@ -4,6 +4,6 @@ using Skill_Exchange.Application.DTOs;
 
 namespace Skill_Exchange.Application.Services.Users.Queries
 {
-    public record GetMatchingUsers(Guid UserId, List<Guid>? SkillsToLearn = null, int Top = 20)
+    public record GetMatchingUsers(Guid UserId, List<Guid>? SkillsToLearn = null, PaginationDto Pagination = null)
         : IRequest<Result<List<UserMatchDTO>>>;
 }

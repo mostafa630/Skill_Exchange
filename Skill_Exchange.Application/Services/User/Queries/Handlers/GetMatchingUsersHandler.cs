@@ -108,7 +108,7 @@ namespace Skill_Exchange.Application.Services.Users.Queries
 
                     double totalMatch = (learnMatch + teachMatch) / 2.0;
 
-                    if (totalMatch > 0)
+                    if (totalMatch >= 0)
                     {
                         userMatches.Add(new UserMatchDTO
                         {
@@ -123,10 +123,13 @@ namespace Skill_Exchange.Application.Services.Users.Queries
                     }
                 }
 
+                if (request.Pagination is not null && request.Pagination.ApplyPagination == true)
+                {
+                    userMatches = userMatches.Skip(request.Pagination.Skip).Take(request.Pagination.Take).ToList();
+                }
                 // 5) Return top matches
                 userMatches = userMatches
                     .OrderByDescending(um => um.MatchScore)
-                    .Take(request.Top)
                     .ToList();
 
                 return Result<List<UserMatchDTO>>.Ok(userMatches);

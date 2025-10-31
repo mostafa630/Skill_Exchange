@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Skill_Exchange.Application.DTOs;
 using Skill_Exchange.Application.DTOs.User;
 using Skill_Exchange.Domain.Entities;
 
@@ -14,11 +15,12 @@ namespace Skill_Exchange.Application.Specifications
         {
 
         }
-        public static UserSpecification Build(UserFilterDTO filter, UserIncludesDTO includes)
+        public static UserSpecification Build(UserFilterDTO filter, UserIncludesDTO includes, PaginationDto pagination)
         {
             var userSpec = new UserSpecification();
             userSpec = filter_process(userSpec, filter);
             userSpec = include_process(userSpec, includes);
+            userSpec = applyPagination(userSpec, pagination);
             return userSpec;
         }
 
@@ -115,6 +117,15 @@ namespace Skill_Exchange.Application.Specifications
             if (includes.Friends)
                 userSpec.AddInclude(u => u.Friends);
 
+            return userSpec;
+        }
+        private static UserSpecification applyPagination(UserSpecification userSpec, PaginationDto pagination)
+        {
+            if (pagination.ApplyPagination)
+            {
+                userSpec.ApplyPaging(pagination.Skip, pagination.Take);
+                return userSpec;
+            }
             return userSpec;
         }
     }

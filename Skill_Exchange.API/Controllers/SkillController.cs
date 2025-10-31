@@ -6,6 +6,7 @@ using Skill_Exchange.Application.DTOs.Skill_Category;
 using Skill_Exchange.Application.Services.GlobalCommands;
 using Skill_Exchange.Application.Services.GlobalQuery;
 using Skill_Exchange.Application.Services.Skill.Commands;
+using Skill_Exchange.Application.Specifications;
 using Skill_Exchange.Domain.Entities;
 using System;
 using System.Linq;
@@ -54,9 +55,10 @@ namespace Skill_Exchange.API.Controllers
 
         // Get all skills
         [HttpGet("all")]
-        public async Task<IActionResult> GetAllSkills()
+        public async Task<IActionResult> GetAllSkills([FromQuery] PaginationDto paginationDto)
         {
-            var result = await _mediator.Send(new GetAll<Skill, SkillResponseDto>(null));
+            var skillSpec = SkillSpecification.Build(paginationDto);
+            var result = await _mediator.Send(new GetAll<Skill, SkillResponseDto>(skillSpec));
             if (!result.Success)
                 return BadRequest(result.Error);
 
