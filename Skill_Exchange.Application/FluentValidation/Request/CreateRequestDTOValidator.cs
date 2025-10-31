@@ -12,19 +12,6 @@ namespace Skill_Exchange.Application.FluentValidation.Request
             .IsInEnum()
             .WithMessage($"Status must be one of the following values: {string.Join(", ", Enum.GetNames(typeof(RequestStatus)))}");
 
-
-            RuleFor(r => r.CreatedAt)
-            .Must(date => date != default(DateTime))
-            .WithMessage("CreatedAt must be a valid date.")
-            .LessThanOrEqualTo(DateTime.UtcNow)
-            .WithMessage("CreatedAt cannot be in the future.");
-
-            RuleFor(r => r.RespondedAt)
-            .Must(date => date != default(DateTime))
-            .WithMessage("CreatedAt must be a valid date.")
-            .LessThanOrEqualTo(DateTime.UtcNow)
-            .WithMessage("CreatedAt cannot be in the future.");
-
             RuleFor(r => r.SenderId)
             .NotEmpty()
             .Must(id => id != Guid.Empty)
