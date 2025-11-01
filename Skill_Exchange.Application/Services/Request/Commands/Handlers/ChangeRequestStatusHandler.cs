@@ -1,6 +1,8 @@
 
 using MediatR;
 using Skill_Exchange.Application.DTOs;
+using Skill_Exchange.Application.DTOs.Conversation;
+using Skill_Exchange.Domain.Entities;
 using Skill_Exchange.Domain.Enums;
 using Skill_Exchange.Domain.Interfaces;
 
@@ -27,6 +29,7 @@ namespace Skill_Exchange.Application.Services.Request.Commands.Handlers
                 if (_request.Status == RequestStatus.Accepted)
                 {
                     await AddFriend(_request.SenderId, _request.RecieverId);
+                    await AddConversation(_request.SenderId, _request.RecieverId);
                 }
                 await _unitOfWork.CompleteAsync();
                 return Result<string>.Ok("Updating Status Done");
@@ -50,6 +53,25 @@ namespace Skill_Exchange.Application.Services.Request.Commands.Handlers
                 throw new Exception("Add Friend Operation failed");
             }
         }
+        private async Task AddConversation(Guid senderId, Guid recieverId)
+        {
+            try
+            {
+                var conversation = new Conversation
+                { 
+                    ParticipantAId = senderId,
+                    ParticipantBId = recieverId,
+                    IsActive = true 
+                };
+                var IsAdded = await _unitOfWork.GetRepository<Conversation>().AddAsync(conversation);
+                await _unitOfWork.CompleteAsync();
+            }
+            catch
+            {
+                throw new Exception("Add Conversation Operation failed");
+            }
+        }
+
     }
 
 
