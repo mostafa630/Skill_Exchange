@@ -1,29 +1,31 @@
-﻿using Azure;
-using MediatR;
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
+using Skill_Exchange.Application.DTOs;
 using Skill_Exchange.Application.DTOs.Message;
-using Skill_Exchange.Application.Services.Conversation.Queries;
-using Skill_Exchange.Application.Services.GlobalCommands;
+using Skill_Exchange.Application.Services;
 using Skill_Exchange.Domain.Entities;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Skill_Exchange.API.Hubs
 {
     public class ChatHub : Hub
     {
-        private readonly IMediator _mediator;
-        private static readonly Dictionary<Guid, string> _connections = new(); 
+        private readonly MessageService _messageService;
+        private readonly Dictionary<Guid, string> _connections = new();
 
-        public ChatHub(IMediator mediator)
+        public ChatHub(MessageService messageService)
         {
-            _mediator = mediator;
+            _messageService = messageService;
         }
 
         public override async Task OnConnectedAsync()
         {
-            if (Guid.TryParse(Context.GetHttpContext()?.Request.Query["userId"], out Guid userId) && userId != Guid.Empty)
+            if (Guid.TryParse(Context.GetHttpContext()?.Request.Query["userId"], out Guid userId) &&
+                userId != Guid.Empty)
             {
                 _connections[userId] = Context.ConnectionId;
-                Console.WriteLine($"User {userId} connected with {Context.ConnectionId}");
             }
             await base.OnConnectedAsync();
         }
@@ -33,36 +35,30 @@ namespace Skill_Exchange.API.Hubs
             var user = _connections.FirstOrDefault(x => x.Value == Context.ConnectionId);
             if (!user.Equals(default(KeyValuePair<Guid, string>)))
                 _connections.Remove(user.Key);
+
             await base.OnDisconnectedAsync(exception);
         }
 
-        public async Task SendMessage(Guid receiverId, Guid senderId, string message)
+        public async Task<Result<Message>> SendMessage(Guid receiverId, Guid senderId, Guid conversationId, string content)
         {
+            //  1: Immediately send message to receiver (if online)
             if (_connections.TryGetValue(receiverId, out var connectionId))
             {
-                await Clients.Client(connectionId).SendAsync("ReceiveMessage", senderId, message);
+                await Clients.Client(connectionId).SendAsync("ReceiveMessage", senderId, content);
             }
 
-            // ✅ Save message in DB
-            var query = new GetConversation(senderId, receiverId);
-            var result = await _mediator.Send(query);
-            var conversationId = result.Data;
-            var createDto = new CreateMessageDTO
-            {
-                SenderId = senderId,
-                ReceiverId = receiverId,
-                ConversationId = conversationId,
-                Content = message
-            };
+            //  2: Save message in DB using MessageService + Result pattern
+            var saveResult = await _messageService.SendMessageAsync(senderId, receiverId, content, conversationId);
 
-            var dbResult= await _mediator.Send(
-                new Add<Message, CreateMessageDTO, MessageResponseDTO>(createDto)
-            );
-
-            if (!dbResult.Success)
+            //  3: Send confirmation or error back to sender
+            if (!saveResult.Success)
             {
-                await Clients.Caller.SendAsync("Error", result.Error);
+                await Clients.Caller.SendAsync("Error", saveResult.Error);
+                return Result<Message>.Fail(saveResult.Error);
             }
+
+            await Clients.Caller.SendAsync("MessageSent", saveResult.Data);
+            return Result<Message>.Ok(saveResult.Data);
         }
     }
 }
