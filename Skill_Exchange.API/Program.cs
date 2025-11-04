@@ -14,6 +14,7 @@ using Skill_Exchange.Infrastructure;
 using Skill_Exchange.Infrastructure.AuthenticationServices;
 using Skill_Exchange.Infrastructure.Configurations;
 using Skill_Exchange.Infrastructure.Peresistence;
+using Skill_Exchange.Infrastructure.Repositories;
 using System.Text.Json.Serialization;
 
 
@@ -68,6 +69,7 @@ builder.Services.AddSingleton<MongoDbContext>(sp =>
     var settings = sp.GetRequiredService<IOptions<MongoDbSettings>>();
     return new MongoDbContext(settings);
 });
+builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 
 // ---------------------- UnitOfWork ---------------------
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();

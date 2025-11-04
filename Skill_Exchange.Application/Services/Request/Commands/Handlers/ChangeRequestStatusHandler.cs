@@ -3,6 +3,7 @@ using Skill_Exchange.Application.DTOs;
 using Skill_Exchange.Domain.Entities;
 using Skill_Exchange.Domain.Enums;
 using Skill_Exchange.Domain.Interfaces;
+using DomainConversation = Skill_Exchange.Domain.Entities.Conversation;
 
 namespace Skill_Exchange.Application.Services.Request.Commands.Handlers
 {
@@ -55,13 +56,13 @@ namespace Skill_Exchange.Application.Services.Request.Commands.Handlers
         {
             try
             {
-                var conversation = new Conversation
+                var conversation = new DomainConversation
                 { 
                     ParticipantAId = senderId,
                     ParticipantBId = recieverId,
                     IsActive = true 
                 };
-                var IsAdded = await _unitOfWork.GetRepository<Conversation>().AddAsync(conversation);
+                var IsAdded = await _unitOfWork.GetRepository<DomainConversation>().AddAsync(conversation);
                 await _unitOfWork.CompleteAsync();
             }
             catch
