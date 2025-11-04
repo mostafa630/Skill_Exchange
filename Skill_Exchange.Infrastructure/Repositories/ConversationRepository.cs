@@ -19,9 +19,12 @@ namespace Skill_Exchange.Infrastructure.Repositories
         }
         public async Task<Guid> GetConversationIdBetween(Guid user1Id, Guid user2Id)
         {
-            var conversation=_dbSet.Where(c=>(c.ParticipantAId==user1Id && c.ParticipantBId==user2Id) ||(c.ParticipantBId == user1Id && c.ParticipantAId == user2Id))
-                .FirstOrDefault();
-            return conversation.Id;
+            var conversation = _dbSet.FirstOrDefault(c =>
+                (c.ParticipantAId == user1Id && c.ParticipantBId == user2Id) ||
+                (c.ParticipantBId == user1Id && c.ParticipantAId == user2Id));
+
+            return conversation?.Id ?? Guid.Empty; 
         }
+
     }
 }
