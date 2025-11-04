@@ -9,5 +9,6 @@ namespace Skill_Exchange.Domain.Interfaces
         Task<Message?> GetByIdAsync(Guid id);
         Task<bool> UpdateMessageAsync(Message message);
         Task<bool> DeleteMessageAsync(Guid id);
+        Task<IEnumerable<Message>> GetUndeliveredMessagesAsync(Guid userId);
     }
 }

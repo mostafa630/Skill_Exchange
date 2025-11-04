@@ -1,4 +1,5 @@
-﻿using MongoDB.Driver;
+﻿using Microsoft.EntityFrameworkCore;
+using MongoDB.Driver;
 using Skill_Exchange.Domain.Entities;
 using Skill_Exchange.Domain.Interfaces;
 using Skill_Exchange.Infrastructure.Peresistence;
@@ -55,5 +56,16 @@ namespace Skill_Exchange.Infrastructure.Repositories
             var result = await _messages.DeleteOneAsync(filter);
             return result.DeletedCount > 0;
         }
+        public async Task<IEnumerable<Message>> GetUndeliveredMessagesAsync(Guid userId)
+        {
+            var filter = Builders<Message>.Filter.And(
+                Builders<Message>.Filter.Eq(m => m.ReceiverId, userId),
+                Builders<Message>.Filter.Eq(m => m.DeliveredAt, null)
+            );
+
+            return await _messages.Find(filter).SortBy(m => m.SentAt).ToListAsync();
+        }
+
+
     }
 }

@@ -101,5 +101,34 @@ namespace Skill_Exchange.Application.Services
                 ? Result<bool>.Ok(true)
                 : Result<bool>.Fail("Failed to delete message.");
         }
+
+        public async Task<Result<IEnumerable<Message>>> GetUndeliveredMessagesAsync(Guid userId)
+        {
+            if (userId == Guid.Empty)
+                return Result<IEnumerable<Message>>.Fail("Invalid user ID");
+
+            var messages = await _messageRepository.GetUndeliveredMessagesAsync(userId);
+            return Result<IEnumerable<Message>>.Ok(messages);
+        }
+
+        public async Task MarkMessageDeliveredAsync(Guid messageId)
+        {
+            var message = await _messageRepository.GetByIdAsync(messageId);
+            if (message != null && message.DeliveredAt == null)
+            {
+                message.DeliveredAt = DateTime.UtcNow;
+                await _messageRepository.UpdateMessageAsync(message);
+            }
+        }
+        public async Task MarkMessageReadAsync(Guid messageId)
+        {
+            var message = await _messageRepository.GetByIdAsync(messageId);
+            if (message != null && message.ReadAt == null)
+            {
+                message.ReadAt = DateTime.UtcNow;
+                await _messageRepository.UpdateMessageAsync(message);
+            }
+        }
+
     }
 }

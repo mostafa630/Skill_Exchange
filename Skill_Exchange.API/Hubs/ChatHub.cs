@@ -16,16 +16,31 @@ namespace Skill_Exchange.API.Hubs
             _messageService = messageService;
         }
 
+        // Called when a user connects
         public override async Task OnConnectedAsync()
         {
             if (Guid.TryParse(Context.GetHttpContext()?.Request.Query["userId"], out Guid userId) && userId != Guid.Empty)
             {
                 _connections[userId] = Context.ConnectionId;
+
+                // Send all undelivered messages to this user
+                var undeliveredResult = await _messageService.GetUndeliveredMessagesAsync(userId);
+                if (undeliveredResult.Success)
+                {
+                    foreach (var msg in undeliveredResult.Data)
+                    {
+                        await Clients.Caller.SendAsync("ReceiveMessage", msg.SenderId, msg.Content, msg.SentAt);
+                        // Mark as delivered
+                        msg.DeliveredAt = DateTime.UtcNow;
+                        await _messageService.MarkMessageDeliveredAsync(msg.Id);
+                    }
+                }
             }
 
             await base.OnConnectedAsync();
         }
 
+        // Called when a user disconnects
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
             var user = _connections.FirstOrDefault(x => x.Value == Context.ConnectionId);
@@ -35,6 +50,7 @@ namespace Skill_Exchange.API.Hubs
             await base.OnDisconnectedAsync(exception);
         }
 
+        // Send a message to a user
         public async Task<Result<Message>> SendMessage(Guid receiverId, Guid senderId, string content)
         {
             if (string.IsNullOrWhiteSpace(content))
@@ -45,28 +61,38 @@ namespace Skill_Exchange.API.Hubs
 
             try
             {
-                // Save message using MessageService (it will internally get conversation and check friendship)
+                // Save message (MessageService will check friendship)
                 var sendResult = await _messageService.SendMessageAsync(senderId, receiverId, content);
-
                 if (!sendResult.Success)
-                    return Result<Message>.Fail(sendResult.Error); // includes "You must be friends" message
+                    return Result<Message>.Fail(sendResult.Error);
 
-                var sentAt = DateTime.UtcNow;
+                var message = sendResult.Data;
 
-                // Real-time send
+                // Real-time send if receiver is online
                 if (_connections.TryGetValue(receiverId, out var connectionId))
                 {
-                    await Clients.Client(connectionId).SendAsync("ReceiveMessage", senderId, content, sentAt);
+                    await Clients.Client(connectionId).SendAsync("ReceiveMessage", senderId, content, message.SentAt);
+
+                    // Mark as delivered since user is online
+                    message.DeliveredAt = DateTime.UtcNow;
+                    await _messageService.MarkMessageDeliveredAsync(message.Id);
                 }
 
-                await Clients.Caller.SendAsync("MessageSent", content, sentAt);
+                // Optional: send confirmation back to sender
+                await Clients.Caller.SendAsync("MessageSent", content, message.SentAt);
 
-                return Result<Message>.Ok(sendResult.Data);
+                return Result<Message>.Ok(message);
             }
             catch (Exception ex)
             {
                 return Result<Message>.Fail(ex.Message);
             }
+        }
+
+        // Optional: call when a user reads a message
+        public async Task MarkAsRead(Guid messageId)
+        {
+            await _messageService.MarkMessageReadAsync(messageId);
         }
     }
 }
