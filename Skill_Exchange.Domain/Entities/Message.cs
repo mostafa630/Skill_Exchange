@@ -1,6 +1,5 @@
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
-using System;
 
 namespace Skill_Exchange.Domain.Entities
 {
@@ -11,7 +10,7 @@ namespace Skill_Exchange.Domain.Entities
         public Guid Id { get; set; }
 
         public string Content { get; set; }
-        public DateTime SentAt { get; set; } = DateTime.UtcNow;
+        public DateTime SentAt { get; set; }
         public DateTime? DeliveredAt { get; set; }
         public DateTime? ReadAt { get; set; }
 

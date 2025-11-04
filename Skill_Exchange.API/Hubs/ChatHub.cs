@@ -41,28 +41,19 @@ namespace Skill_Exchange.API.Hubs
         public async Task<Result<Message>> SendMessage(Guid receiverId, Guid senderId, string content)
         {
             if (string.IsNullOrWhiteSpace(content))
-            {
                 return Result<Message>.Fail("Message cannot be empty");
-            }
 
-            var sentAt = DateTime.UtcNow;
-
-            // Real-time send
-            if (_connections.TryGetValue(receiverId, out var connectionId))
-            {
-                await Clients.Client(connectionId).SendAsync("ReceiveMessage", senderId, content, sentAt);
-            }
-
-            await Clients.Caller.SendAsync("MessageSent", content, sentAt);
+            if (receiverId == senderId)
+                return Result<Message>.Fail("You cannot send a message to yourself");
 
             try
             {
-                // Get or create conversation
+                // Get the conversation between the two users
                 var query = new GetConversation(senderId, receiverId);
                 var conversationResult = await _mediator.Send(query);
 
-                if (!conversationResult.Success)
-                    return Result<Message>.Fail("Failed to get conversation");
+                if (!conversationResult.Success || conversationResult.Data == Guid.Empty)
+                    return Result<Message>.Fail("You must be friends to send messages");
 
                 var conversationId = conversationResult.Data;
 
@@ -72,6 +63,16 @@ namespace Skill_Exchange.API.Hubs
                 if (!sendResult.Success)
                     return Result<Message>.Fail(sendResult.Error);
 
+                var sentAt = DateTime.UtcNow;
+
+                // Real-time send
+                if (_connections.TryGetValue(receiverId, out var connectionId))
+                {
+                    await Clients.Client(connectionId).SendAsync("ReceiveMessage", senderId, content, sentAt);
+                }
+
+                await Clients.Caller.SendAsync("MessageSent", content, sentAt);
+
                 return Result<Message>.Ok(sendResult.Data);
             }
             catch (Exception ex)
@@ -79,5 +80,6 @@ namespace Skill_Exchange.API.Hubs
                 return Result<Message>.Fail(ex.Message);
             }
         }
+
     }
 }
