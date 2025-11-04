@@ -7,6 +7,7 @@ using Skill_Exchange.API;
 using Skill_Exchange.API.Hubs;
 using Skill_Exchange.Application.FluentValidation.Auth;
 using Skill_Exchange.Application.Interfaces;
+using Skill_Exchange.Application.Services;
 using Skill_Exchange.Application.Services.GlobalQuery.Handlers;
 using Skill_Exchange.Domain.Entities;
 using Skill_Exchange.Domain.Interfaces;
@@ -87,6 +88,9 @@ builder.Services.AddMediatR(cfg =>
 builder.Services.AddMediatorHandlers();
 // ---------------------- SignalR ----------------------
 builder.Services.AddSignalR();
+// ---------------------- Message ----------------------
+builder.Services.AddScoped<MessageService>();
+builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 
 // ==================== Add CORS ====================
 builder.Services.AddCors(options =>
