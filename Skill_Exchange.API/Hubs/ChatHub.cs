@@ -1,20 +1,21 @@
-﻿using Azure;
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.SignalR;
-using Skill_Exchange.Application.DTOs.Message;
+using Skill_Exchange.Application.DTOs;
+using Skill_Exchange.Application.Services;
 using Skill_Exchange.Application.Services.Conversation.Queries;
-using Skill_Exchange.Application.Services.GlobalCommands;
 using Skill_Exchange.Domain.Entities;
 
 namespace Skill_Exchange.API.Hubs
 {
     public class ChatHub : Hub
     {
+        private readonly MessageService _messageService;
         private readonly IMediator _mediator;
-        private static readonly Dictionary<Guid, string> _connections = new(); 
+        private static readonly Dictionary<Guid, string> _connections = new();
 
-        public ChatHub(IMediator mediator)
+        public ChatHub(MessageService messageService, IMediator mediator)
         {
+            _messageService = messageService;
             _mediator = mediator;
         }
 
@@ -23,8 +24,8 @@ namespace Skill_Exchange.API.Hubs
             if (Guid.TryParse(Context.GetHttpContext()?.Request.Query["userId"], out Guid userId) && userId != Guid.Empty)
             {
                 _connections[userId] = Context.ConnectionId;
-                Console.WriteLine($"User {userId} connected with {Context.ConnectionId}");
             }
+
             await base.OnConnectedAsync();
         }
 
@@ -33,43 +34,49 @@ namespace Skill_Exchange.API.Hubs
             var user = _connections.FirstOrDefault(x => x.Value == Context.ConnectionId);
             if (!user.Equals(default(KeyValuePair<Guid, string>)))
                 _connections.Remove(user.Key);
+
             await base.OnDisconnectedAsync(exception);
         }
-        public async Task SendMessage(Guid receiverId, Guid senderId, string message)
+
+        public async Task<Result<Message>> SendMessage(Guid receiverId, Guid senderId, string content)
         {
-            // Send real-time message
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                return Result<Message>.Fail("Message cannot be empty");
+            }
+
+            var sentAt = DateTime.UtcNow;
+
+            // Real-time send
             if (_connections.TryGetValue(receiverId, out var connectionId))
             {
-                await Clients.Client(connectionId).SendAsync("ReceiveMessage", senderId, message);
+                await Clients.Client(connectionId).SendAsync("ReceiveMessage", senderId, content, sentAt);
             }
 
-            // Save message in DB
-            var query = new GetConversation(senderId, receiverId);
-            var result = await _mediator.Send(query);
+            await Clients.Caller.SendAsync("MessageSent", content, sentAt);
 
-            if (!result.Success || result.Data == Guid.Empty)
+            try
             {
-                await Clients.Caller.SendAsync("Error", "Failed to get conversation.");
-                return;
+                // Get or create conversation
+                var query = new GetConversation(senderId, receiverId);
+                var conversationResult = await _mediator.Send(query);
+
+                if (!conversationResult.Success)
+                    return Result<Message>.Fail("Failed to get conversation");
+
+                var conversationId = conversationResult.Data;
+
+                // Save message in DB
+                var sendResult = await _messageService.SendMessageAsync(senderId, receiverId, content, conversationId);
+
+                if (!sendResult.Success)
+                    return Result<Message>.Fail(sendResult.Error);
+
+                return Result<Message>.Ok(sendResult.Data);
             }
-
-            var conversationId = result.Data;
-
-            var createDto = new CreateMessageDTO
+            catch (Exception ex)
             {
-                SenderId = senderId,
-                ReceiverId = receiverId,
-                ConversationId = conversationId,
-                Content = message
-            };
-
-            var dbResult = await _mediator.Send(
-                new Add<Message, CreateMessageDTO, MessageResponseDTO>(createDto)
-            );
-
-            if (!dbResult.Success)
-            {
-                await Clients.Caller.SendAsync("Error", dbResult.Error);
+                return Result<Message>.Fail(ex.Message);
             }
         }
     }

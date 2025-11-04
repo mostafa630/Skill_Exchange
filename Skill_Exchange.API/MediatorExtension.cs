@@ -7,6 +7,8 @@ using Skill_Exchange.Application.DTOs.Skill;
 using Skill_Exchange.Application.DTOs.Skill_Category;
 using Skill_Exchange.Application.DTOs.User;
 using Skill_Exchange.Application.DTOs.UserSkill;
+using Skill_Exchange.Application.Services.Conversation.Queries;
+using Skill_Exchange.Application.Services.Conversation.Queries.Handlers;
 using Skill_Exchange.Application.Services.GlobalCommands;
 using Skill_Exchange.Application.Services.GlobalCommands.Handlers;
 using Skill_Exchange.Application.Services.GlobalQuery;
@@ -107,6 +109,14 @@ namespace Skill_Exchange.API
             services.AddTransient<IRequestHandler<UpdateRatingAndFeedback, Result<string>>, UpdateRatingAndFeedbackHandler>();
             services.AddTransient<IRequestHandler<GetUserRatingSummary, Result<UserRatingSummaryDto>>, GetUserRatingSummaryHandler>();
 
+            return services;
+        }
+        // ---------------- Conversation ----------------
+        public static IServiceCollection AddConversationHandlers(this IServiceCollection services)
+        {
+            // Conversation Queries
+            services.AddTransient<IRequestHandler<GetConversation, Result<Guid>>, GetConversationHandler>();
+            
             return services;
         }
 

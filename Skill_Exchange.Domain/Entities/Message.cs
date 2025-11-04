@@ -11,7 +11,7 @@ namespace Skill_Exchange.Domain.Entities
         public Guid Id { get; set; }
 
         public string Content { get; set; }
-        public DateTime SentAt { get; set; }
+        public DateTime SentAt { get; set; } = DateTime.UtcNow;
         public DateTime? DeliveredAt { get; set; }
         public DateTime? ReadAt { get; set; }
 
