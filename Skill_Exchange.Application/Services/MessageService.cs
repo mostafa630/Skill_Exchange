@@ -96,15 +96,20 @@ namespace Skill_Exchange.Application.Services
             }
         }
 
-        public async Task MarkMessageReadAsync(Guid messageId)
+        public async Task<MessageResponseDTO?> MarkMessageReadAsync(Guid messageId)
         {
             var message = await _messageRepository.GetByIdAsync(messageId);
             if (message != null && message.ReadAt == null)
             {
                 message.ReadAt = DateTime.UtcNow;
-                await _messageRepository.UpdateMessageAsync(message);
+                var updated = await _messageRepository.UpdateMessageAsync(message);
+                if (updated)
+                    return _mapper.Map<MessageResponseDTO>(message);
             }
+
+            return message != null ? _mapper.Map<MessageResponseDTO>(message) : null;
         }
+
 
         public async Task<Result<bool>> UpdateMessageAsync(Guid messageId, string newContent)
         {

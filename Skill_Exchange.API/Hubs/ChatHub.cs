@@ -1,5 +1,4 @@
-﻿using MediatR;
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
 using Skill_Exchange.Application.DTOs;
 using Skill_Exchange.Application.DTOs.Message;
 using Skill_Exchange.Application.Services;
@@ -30,9 +29,11 @@ namespace Skill_Exchange.API.Hubs
                 {
                     foreach (var msg in undeliveredResult.Data)
                     {
+                        // Send to connected user
                         await Clients.Caller.SendAsync("ReceiveMessage", msg);
 
-                        // Mark as delivered
+                        // Mark as delivered now
+                        msg.DeliveredAt = DateTime.UtcNow;
                         await _messageService.MarkMessageDeliveredAsync(msg.Id);
                     }
                 }
@@ -62,26 +63,24 @@ namespace Skill_Exchange.API.Hubs
 
             try
             {
-                // Save message using MessageService
+                // Save message in DB
                 var sendResult = await _messageService.SendMessageAsync(senderId, receiverId, content);
                 if (!sendResult.Success)
                     return Result<MessageResponseDTO>.Fail(sendResult.Error);
 
                 var messageDto = sendResult.Data;
 
-                // Real-time send if receiver is online
+                // Real-time delivery if receiver is online
                 if (_connections.TryGetValue(receiverId, out var connectionId))
                 {
                     await Clients.Client(connectionId).SendAsync("ReceiveMessage", messageDto);
 
-                    // Mark as delivered since user is online
-                    await _messageService.MarkMessageDeliveredAsync(messageDto.Id);
-
-                    // Update DTO locally
+                    // Mark as delivered immediately
                     messageDto.DeliveredAt = DateTime.UtcNow;
+                    await _messageService.MarkMessageDeliveredAsync(messageDto.Id);
                 }
 
-                // Optional: confirmation back to sender
+                // Notify sender that message was sent
                 await Clients.Caller.SendAsync("MessageSent", messageDto);
 
                 return Result<MessageResponseDTO>.Ok(messageDto);
@@ -92,10 +91,19 @@ namespace Skill_Exchange.API.Hubs
             }
         }
 
-        // Called when a user reads a message
+        // Mark a message as read
         public async Task MarkAsRead(Guid messageId)
         {
-            await _messageService.MarkMessageReadAsync(messageId);
+            var updatedMessage = await _messageService.MarkMessageReadAsync(messageId);
+            if (updatedMessage != null)
+            {
+                // Notify sender that message was read
+                if (_connections.TryGetValue(updatedMessage.SenderId, out var senderConnection))
+                {
+                    await Clients.Client(senderConnection)
+                        .SendAsync("MessageRead", updatedMessage);
+                }
+            }
         }
     }
 }
