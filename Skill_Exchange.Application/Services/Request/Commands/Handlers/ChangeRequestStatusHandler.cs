@@ -1,7 +1,5 @@
-
 using MediatR;
 using Skill_Exchange.Application.DTOs;
-using Skill_Exchange.Application.DTOs.Conversation;
 using Skill_Exchange.Domain.Entities;
 using Skill_Exchange.Domain.Enums;
 using Skill_Exchange.Domain.Interfaces;

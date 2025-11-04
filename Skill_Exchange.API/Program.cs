@@ -1,18 +1,19 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using FluentValidation;
+using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Skill_Exchange.API;
+using Skill_Exchange.API.Hubs;
+using Skill_Exchange.Application.FluentValidation.Auth;
+using Skill_Exchange.Application.Interfaces;
 using Skill_Exchange.Application.Services.GlobalQuery.Handlers;
+using Skill_Exchange.Domain.Entities;
 using Skill_Exchange.Domain.Interfaces;
 using Skill_Exchange.Infrastructure;
+using Skill_Exchange.Infrastructure.AuthenticationServices;
 using Skill_Exchange.Infrastructure.Configurations;
 using Skill_Exchange.Infrastructure.Peresistence;
-using Skill_Exchange.Infrastructure.AuthenticationServices;
-using Skill_Exchange.Application.Interfaces;
-using FluentValidation.AspNetCore;
-using Skill_Exchange.Application.FluentValidation.Auth;
-using Microsoft.AspNetCore.Identity;
-using Skill_Exchange.Domain.Entities;
-using FluentValidation;
 using System.Text.Json.Serialization;
 
 
@@ -82,17 +83,22 @@ builder.Services.AddMediatR(cfg =>
 });
 
 builder.Services.AddMediatorHandlers();
+// ---------------------- SignalR ----------------------
+builder.Services.AddSignalR();
 
 // ==================== Add CORS ====================
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
     {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
+        policy
+            .SetIsOriginAllowed(_ => true)
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials();
     });
 });
+
 
 builder.Services.AddControllers();
 builder.Services.AddFluentValidationAutoValidation();
@@ -125,4 +131,6 @@ app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHub<ChatHub>("/chatHub");
+app.UseWebSockets();
 app.Run();

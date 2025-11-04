@@ -10,7 +10,7 @@ namespace Skill_Exchange.Domain.Interfaces
         IUserSkillRepository UserSkills { get; }
         IGenericRepository<RatingAndFeedback> RatingsAndFeedbacks { get; }
         IRequestRepository Requests { get; }
-        IGenericRepository<Conversation> Conversations { get; }
+        IConversationRepository Conversations { get; }
         IGenericRepository<Notification> Notifications { get; }
         IPendingVerificationRepository PendingVerifications { get; }
         Task<int> CompleteAsync();
