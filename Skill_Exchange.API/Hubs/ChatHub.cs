@@ -55,7 +55,7 @@ namespace Skill_Exchange.API.Hubs
                 Content = message
             };
 
-            var dbResult = await _mediator.Send(
+            var dbResult= await _mediator.Send(
                 new Add<Message, CreateMessageDTO, MessageResponseDTO>(createDto)
             );
 

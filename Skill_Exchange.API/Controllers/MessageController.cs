@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Skill_Exchange.Application.DTOs;
 using Skill_Exchange.Application.DTOs.Message;
 using Skill_Exchange.Application.Services;
 
@@ -18,40 +19,57 @@ namespace Skill_Exchange.API.Controllers
         [HttpPost("send")]
         public async Task<IActionResult> SendMessage([FromBody] CreateMessageDTO request)
         {
-            var message = await _messageService.SendMessageAsync(
+            var result = await _messageService.SendMessageAsync(
                 request.SenderId, request.ReceiverId, request.Content, request.ConversationId);
-            return Ok(message);
+
+            if (!result.Success)
+                return BadRequest(result.Error);
+
+            return Ok(result.Data);
         }
 
         [HttpGet("conversation/{conversationId}")]
         public async Task<IActionResult> GetConversationMessages(Guid conversationId)
         {
-            var messages = await _messageService.GetConversationMessagesAsync(conversationId);
-            return Ok(messages);
+            var result = await _messageService.GetConversationMessagesAsync(conversationId);
+
+            if (!result.Success)
+                return NotFound(result.Error);
+
+            return Ok(result.Data);
         }
 
         [HttpGet("user/{userId}")]
         public async Task<IActionResult> GetUserMessages(Guid userId)
         {
-            var messages = await _messageService.GetUserMessagesAsync(userId);
-            return Ok(messages);
+            var result = await _messageService.GetUserMessagesAsync(userId);
+
+            if (!result.Success)
+                return NotFound(result.Error);
+
+            return Ok(result.Data);
         }
 
         [HttpPut("{messageId}")]
         public async Task<IActionResult> UpdateMessage(Guid messageId, [FromBody] string newContent)
         {
-            var success = await _messageService.UpdateMessageAsync(messageId, newContent);
-            return success ? Ok() : NotFound();
+            var result = await _messageService.UpdateMessageAsync(messageId, newContent);
+
+            if (!result.Success)
+                return BadRequest(result.Error);
+
+            return Ok(new { message = "Message updated successfully." });
         }
 
         [HttpDelete("{messageId}")]
         public async Task<IActionResult> DeleteMessage(Guid messageId)
         {
-            var success = await _messageService.DeleteMessageAsync(messageId);
-            return success ? Ok() : NotFound();
+            var result = await _messageService.DeleteMessageAsync(messageId);
+
+            if (!result.Success)
+                return NotFound(result.Error);
+
+            return Ok(new { message = "Message deleted successfully." });
         }
     }
-
-    //public record SendMessageRequest(Guid SenderId, Guid ReceiverId, Guid ConversationId, string Content);
-    //public record UpdateMessageRequest(string NewContent);
 }

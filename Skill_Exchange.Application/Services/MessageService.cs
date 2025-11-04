@@ -1,10 +1,6 @@
-﻿using Skill_Exchange.Domain.Entities;
+﻿using Skill_Exchange.Application.DTOs;
+using Skill_Exchange.Domain.Entities;
 using Skill_Exchange.Domain.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Skill_Exchange.Application.Services
 {
@@ -17,10 +13,16 @@ namespace Skill_Exchange.Application.Services
             _messageRepository = messageRepository;
         }
 
-        public async Task<Message> SendMessageAsync(Guid senderId, Guid receiverId, string content, Guid conversationId)
+        public async Task<Result<Message>> SendMessageAsync(Guid senderId, Guid receiverId, string content, Guid conversationId)
         {
             if (string.IsNullOrWhiteSpace(content))
-                throw new ArgumentException("Message content cannot be empty.");
+                return Result<Message>.Fail("Message content cannot be empty.");
+
+            if (senderId == Guid.Empty || receiverId == Guid.Empty)
+                return Result<Message>.Fail("Invalid sender or receiver ID.");
+
+            if (conversationId == Guid.Empty)
+                return Result<Message>.Fail("Invalid conversation ID.");
 
             var message = new Message
             {
@@ -28,43 +30,69 @@ namespace Skill_Exchange.Application.Services
                 ReceiverId = receiverId,
                 Content = content.Trim(),
                 ConversationId = conversationId,
+                SentAt = DateTime.UtcNow,
                 ReadAt = null
             };
 
             await _messageRepository.AddMessageAsync(message);
-            return message;
+            return Result<Message>.Ok(message);
         }
 
-        public async Task<IEnumerable<Message>> GetConversationMessagesAsync(Guid conversationId)
+        public async Task<Result<IEnumerable<Message>>> GetConversationMessagesAsync(Guid conversationId)
         {
             if (conversationId == Guid.Empty)
-                throw new ArgumentException("Invalid conversation ID.");
+                return Result<IEnumerable<Message>>.Fail("Invalid conversation ID.");
 
-            return await _messageRepository.GetConversationMessagesAsync(conversationId);
+            var messages = await _messageRepository.GetConversationMessagesAsync(conversationId);
+
+            if (!messages.Any())
+                return Result<IEnumerable<Message>>.Fail("No messages found for this conversation.");
+
+            return Result<IEnumerable<Message>>.Ok(messages);
         }
 
-        public async Task<IEnumerable<Message>> GetUserMessagesAsync(Guid userId)
+        public async Task<Result<IEnumerable<Message>>> GetUserMessagesAsync(Guid userId)
         {
             if (userId == Guid.Empty)
-                throw new ArgumentException("Invalid user ID.");
+                return Result<IEnumerable<Message>>.Fail("Invalid user ID.");
 
-            return await _messageRepository.GetUserMessagesAsync(userId);
+            var messages = await _messageRepository.GetUserMessagesAsync(userId);
+
+            if (!messages.Any())
+                return Result<IEnumerable<Message>>.Fail("No messages found for this user.");
+
+            return Result<IEnumerable<Message>>.Ok(messages);
         }
 
-        public async Task<bool> UpdateMessageAsync(Guid messageId, string newContent)
+        public async Task<Result<bool>> UpdateMessageAsync(Guid messageId, string newContent)
         {
-            var message = await _messageRepository.GetByIdAsync(messageId);
-            if (message == null) return false;
+            if (string.IsNullOrWhiteSpace(newContent))
+                return Result<bool>.Fail("Message content cannot be empty.");
 
-            message.Content = newContent;
+            var message = await _messageRepository.GetByIdAsync(messageId);
+            if (message == null)
+                return Result<bool>.Fail("Message not found.");
+
+            message.Content = newContent.Trim();
             message.SentAt = DateTime.UtcNow; // optional: track edit time
 
-            return await _messageRepository.UpdateMessageAsync(message);
+            var updated = await _messageRepository.UpdateMessageAsync(message);
+
+            return updated
+                ? Result<bool>.Ok(true)
+                : Result<bool>.Fail("Failed to update message.");
         }
 
-        public async Task<bool> DeleteMessageAsync(Guid id)
+        public async Task<Result<bool>> DeleteMessageAsync(Guid id)
         {
-            return await _messageRepository.DeleteMessageAsync(id);
+            if (id == Guid.Empty)
+                return Result<bool>.Fail("Invalid message ID.");
+
+            var deleted = await _messageRepository.DeleteMessageAsync(id);
+
+            return deleted
+                ? Result<bool>.Ok(true)
+                : Result<bool>.Fail("Failed to delete message.");
         }
     }
 }
