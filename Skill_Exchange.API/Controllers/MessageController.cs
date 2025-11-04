@@ -16,6 +16,13 @@ namespace Skill_Exchange.API.Controllers
             _messageService = messageService;
         }
 
+        // DTO for updating a message
+        public class UpdateMessageDTO
+        {
+            public string Content { get; set; } = string.Empty;
+        }
+
+        // Send a new message
         [HttpPost("send")]
         public async Task<IActionResult> SendMessage([FromBody] CreateMessageDTO request)
         {
@@ -25,9 +32,10 @@ namespace Skill_Exchange.API.Controllers
             if (!result.Success)
                 return BadRequest(result.Error);
 
-            return Ok(result.Data);
+            return Ok(result.Data); 
         }
 
+        // Get messages in a conversation
         [HttpGet("conversation/{conversationId}")]
         public async Task<IActionResult> GetConversationMessages(Guid conversationId)
         {
@@ -36,9 +44,10 @@ namespace Skill_Exchange.API.Controllers
             if (!result.Success)
                 return NotFound(result.Error);
 
-            return Ok(result.Data);
+            return Ok(result.Data); 
         }
 
+        // Get messages for a user
         [HttpGet("user/{userId}")]
         public async Task<IActionResult> GetUserMessages(Guid userId)
         {
@@ -47,13 +56,14 @@ namespace Skill_Exchange.API.Controllers
             if (!result.Success)
                 return NotFound(result.Error);
 
-            return Ok(result.Data);
+            return Ok(result.Data); 
         }
 
+        // Update a message
         [HttpPut("{messageId}")]
-        public async Task<IActionResult> UpdateMessage(Guid messageId, [FromBody] string newContent)
+        public async Task<IActionResult> UpdateMessage(Guid messageId, [FromBody] UpdateMessageDTO request)
         {
-            var result = await _messageService.UpdateMessageAsync(messageId, newContent);
+            var result = await _messageService.UpdateMessageAsync(messageId, request.Content);
 
             if (!result.Success)
                 return BadRequest(result.Error);
@@ -61,10 +71,12 @@ namespace Skill_Exchange.API.Controllers
             return Ok(new { message = "Message updated successfully." });
         }
 
+        // Delete a message
         [HttpDelete("{messageId}")]
         public async Task<IActionResult> DeleteMessage(Guid messageId)
         {
             var result = await _messageService.DeleteMessageAsync(messageId);
+
             if (!result.Success)
                 return NotFound(result.Error);
 

@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.SignalR;
 using Skill_Exchange.Application.DTOs;
+using Skill_Exchange.Application.DTOs.Message;
 using Skill_Exchange.Application.Services;
 using Skill_Exchange.Domain.Entities;
 
@@ -29,9 +30,9 @@ namespace Skill_Exchange.API.Hubs
                 {
                     foreach (var msg in undeliveredResult.Data)
                     {
-                        await Clients.Caller.SendAsync("ReceiveMessage", msg.SenderId, msg.Content, msg.SentAt);
+                        await Clients.Caller.SendAsync("ReceiveMessage", msg);
+
                         // Mark as delivered
-                        msg.DeliveredAt = DateTime.UtcNow;
                         await _messageService.MarkMessageDeliveredAsync(msg.Id);
                     }
                 }
@@ -51,45 +52,47 @@ namespace Skill_Exchange.API.Hubs
         }
 
         // Send a message to a user
-        public async Task<Result<Message>> SendMessage(Guid receiverId, Guid senderId, string content)
+        public async Task<Result<MessageResponseDTO>> SendMessage(Guid receiverId, Guid senderId, string content)
         {
             if (string.IsNullOrWhiteSpace(content))
-                return Result<Message>.Fail("Message cannot be empty");
+                return Result<MessageResponseDTO>.Fail("Message cannot be empty");
 
             if (receiverId == senderId)
-                return Result<Message>.Fail("You cannot send a message to yourself");
+                return Result<MessageResponseDTO>.Fail("You cannot send a message to yourself");
 
             try
             {
-                // Save message (MessageService will check friendship)
+                // Save message using MessageService
                 var sendResult = await _messageService.SendMessageAsync(senderId, receiverId, content);
                 if (!sendResult.Success)
-                    return Result<Message>.Fail(sendResult.Error);
+                    return Result<MessageResponseDTO>.Fail(sendResult.Error);
 
-                var message = sendResult.Data;
+                var messageDto = sendResult.Data;
 
                 // Real-time send if receiver is online
                 if (_connections.TryGetValue(receiverId, out var connectionId))
                 {
-                    await Clients.Client(connectionId).SendAsync("ReceiveMessage", senderId, content, message.SentAt);
+                    await Clients.Client(connectionId).SendAsync("ReceiveMessage", messageDto);
 
                     // Mark as delivered since user is online
-                    message.DeliveredAt = DateTime.UtcNow;
-                    await _messageService.MarkMessageDeliveredAsync(message.Id);
+                    await _messageService.MarkMessageDeliveredAsync(messageDto.Id);
+
+                    // Update DTO locally
+                    messageDto.DeliveredAt = DateTime.UtcNow;
                 }
 
-                // Optional: send confirmation back to sender
-                await Clients.Caller.SendAsync("MessageSent", content, message.SentAt);
+                // Optional: confirmation back to sender
+                await Clients.Caller.SendAsync("MessageSent", messageDto);
 
-                return Result<Message>.Ok(message);
+                return Result<MessageResponseDTO>.Ok(messageDto);
             }
             catch (Exception ex)
             {
-                return Result<Message>.Fail(ex.Message);
+                return Result<MessageResponseDTO>.Fail(ex.Message);
             }
         }
 
-        // Optional: call when a user reads a message
+        // Called when a user reads a message
         public async Task MarkAsRead(Guid messageId)
         {
             await _messageService.MarkMessageReadAsync(messageId);
