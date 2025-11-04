@@ -13,9 +13,6 @@ namespace Skill_Exchange.Application.FluentValidation.Message
             RuleFor(x => x.ReceiverId)
                 .NotEmpty().WithMessage("ReceiverId is required.");
 
-            RuleFor(x => x.ConversationId)
-                .NotEmpty().WithMessage("ConversationId is required.");
-
             RuleFor(x => x.Content)
                 .NotEmpty().WithMessage("Message content cannot be empty.")
                 .MaximumLength(1000).WithMessage("Message content cannot exceed 1000 characters.");

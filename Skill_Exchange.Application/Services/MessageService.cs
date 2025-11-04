@@ -1,4 +1,6 @@
-﻿using Skill_Exchange.Application.DTOs;
+﻿using MediatR;
+using Skill_Exchange.Application.DTOs;
+using Skill_Exchange.Application.Services.Conversation.Queries;
 using Skill_Exchange.Domain.Entities;
 using Skill_Exchange.Domain.Interfaces;
 
@@ -7,13 +9,14 @@ namespace Skill_Exchange.Application.Services
     public class MessageService
     {
         private readonly IMessageRepository _messageRepository;
-
-        public MessageService(IMessageRepository messageRepository)
+        private readonly IMediator _mediator;
+        public MessageService(IMessageRepository messageRepository, IMediator mediator)
         {
             _messageRepository = messageRepository;
+            _mediator = mediator;
         }
 
-        public async Task<Result<Message>> SendMessageAsync(Guid senderId, Guid receiverId, string content, Guid conversationId)
+        public async Task<Result<Message>> SendMessageAsync(Guid senderId, Guid receiverId, string content)
         {
             if (string.IsNullOrWhiteSpace(content))
                 return Result<Message>.Fail("Message content cannot be empty.");
@@ -21,8 +24,12 @@ namespace Skill_Exchange.Application.Services
             if (senderId == Guid.Empty || receiverId == Guid.Empty)
                 return Result<Message>.Fail("Invalid sender or receiver ID.");
 
-            if (conversationId == Guid.Empty)
-                return Result<Message>.Fail("Invalid conversation ID.");
+            // Get conversation via mediator
+            var conversationResult = await _mediator.Send(new GetConversation(senderId, receiverId));
+            if (!conversationResult.Success || conversationResult.Data == Guid.Empty)
+                return Result<Message>.Fail("You must be friends to send messages.");
+
+            var conversationId = conversationResult.Data;
 
             var message = new Message
             {

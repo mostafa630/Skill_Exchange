@@ -20,7 +20,7 @@ namespace Skill_Exchange.API.Controllers
         public async Task<IActionResult> SendMessage([FromBody] CreateMessageDTO request)
         {
             var result = await _messageService.SendMessageAsync(
-                request.SenderId, request.ReceiverId, request.Content, request.ConversationId);
+                request.SenderId, request.ReceiverId, request.Content);
 
             if (!result.Success)
                 return BadRequest(result.Error);
@@ -65,7 +65,6 @@ namespace Skill_Exchange.API.Controllers
         public async Task<IActionResult> DeleteMessage(Guid messageId)
         {
             var result = await _messageService.DeleteMessageAsync(messageId);
-
             if (!result.Success)
                 return NotFound(result.Error);
 

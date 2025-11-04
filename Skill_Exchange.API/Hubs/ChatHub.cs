@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.SignalR;
 using Skill_Exchange.Application.DTOs;
 using Skill_Exchange.Application.Services;
-using Skill_Exchange.Application.Services.Conversation.Queries;
 using Skill_Exchange.Domain.Entities;
 
 namespace Skill_Exchange.API.Hubs
@@ -10,13 +9,11 @@ namespace Skill_Exchange.API.Hubs
     public class ChatHub : Hub
     {
         private readonly MessageService _messageService;
-        private readonly IMediator _mediator;
         private static readonly Dictionary<Guid, string> _connections = new();
 
-        public ChatHub(MessageService messageService, IMediator mediator)
+        public ChatHub(MessageService messageService)
         {
             _messageService = messageService;
-            _mediator = mediator;
         }
 
         public override async Task OnConnectedAsync()
@@ -48,20 +45,11 @@ namespace Skill_Exchange.API.Hubs
 
             try
             {
-                // Get the conversation between the two users
-                var query = new GetConversation(senderId, receiverId);
-                var conversationResult = await _mediator.Send(query);
-
-                if (!conversationResult.Success || conversationResult.Data == Guid.Empty)
-                    return Result<Message>.Fail("You must be friends to send messages");
-
-                var conversationId = conversationResult.Data;
-
-                // Save message in DB
-                var sendResult = await _messageService.SendMessageAsync(senderId, receiverId, content, conversationId);
+                // Save message using MessageService (it will internally get conversation and check friendship)
+                var sendResult = await _messageService.SendMessageAsync(senderId, receiverId, content);
 
                 if (!sendResult.Success)
-                    return Result<Message>.Fail(sendResult.Error);
+                    return Result<Message>.Fail(sendResult.Error); // includes "You must be friends" message
 
                 var sentAt = DateTime.UtcNow;
 
@@ -80,6 +68,5 @@ namespace Skill_Exchange.API.Hubs
                 return Result<Message>.Fail(ex.Message);
             }
         }
-
     }
 }
