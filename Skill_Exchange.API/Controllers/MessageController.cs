@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Skill_Exchange.Application.DTOs;
+using Skill_Exchange.Application.DTOs.Conversation;
 using Skill_Exchange.Application.DTOs.Message;
 using Skill_Exchange.Application.Services;
 
@@ -32,7 +33,7 @@ namespace Skill_Exchange.API.Controllers
             if (!result.Success)
                 return BadRequest(result.Error);
 
-            return Ok(result.Data); 
+            return Ok(result.Data);
         }
 
         // Get messages in a conversation
@@ -44,19 +45,29 @@ namespace Skill_Exchange.API.Controllers
             if (!result.Success)
                 return NotFound(result.Error);
 
-            return Ok(result.Data); 
+            return Ok(result.Data);
         }
 
-        // Get messages for a user
+        // Get paginated messages for a user
         [HttpGet("user/{userId}")]
-        public async Task<IActionResult> GetUserMessages(Guid userId)
+        public async Task<IActionResult> GetUserMessages(
+            Guid userId,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20)
         {
-            var result = await _messageService.GetUserMessagesAsync(userId);
+            var pagination = new PaginationDto
+            {
+                ApplyPagination = true,
+                Skip = (page - 1) * pageSize,
+                Take = pageSize
+            };
+
+            var result = await _messageService.GetUserMessagesPaginatedAsync(userId, pagination);
 
             if (!result.Success)
                 return NotFound(result.Error);
 
-            return Ok(result.Data); 
+            return Ok(result.Data);
         }
 
         // Update a message
@@ -81,6 +92,21 @@ namespace Skill_Exchange.API.Controllers
                 return NotFound(result.Error);
 
             return Ok(new { message = "Message deleted successfully." });
+        }
+
+        // Get conversation previews for a user (WhatsApp style)
+        [HttpGet("previews/{userId}")]
+        public async Task<IActionResult> GetConversationPreviews(
+            Guid userId,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20)
+        {
+            var result = await _messageService.GetConversationPreviewsAsync(userId, page, pageSize);
+
+            if (!result.Success)
+                return NotFound(result.Error);
+
+            return Ok(result.Data);
         }
     }
 }

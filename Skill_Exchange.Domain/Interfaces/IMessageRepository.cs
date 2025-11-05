@@ -10,5 +10,8 @@ namespace Skill_Exchange.Domain.Interfaces
         Task<bool> UpdateMessageAsync(Message message);
         Task<bool> DeleteMessageAsync(Guid id);
         Task<IEnumerable<Message>> GetUndeliveredMessagesAsync(Guid userId);
+        Task<IEnumerable<Message>> GetUserMessagesPaginatedAsync(Guid userId, int page, int pageSize);
+        Task<IEnumerable<(Guid ConversationId, Message LastMessage, List<Guid> Participants)>> GetUserConversationDataPaginatedAsync(Guid userId, int page, int pageSize);
+
     }
 }

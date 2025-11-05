@@ -1,10 +1,15 @@
 ﻿using AutoMapper;
 using MediatR;
 using Skill_Exchange.Application.DTOs;
+using Skill_Exchange.Application.DTOs.Conversation;
 using Skill_Exchange.Application.DTOs.Message;
 using Skill_Exchange.Application.Services.Conversation.Queries;
 using Skill_Exchange.Domain.Entities;
 using Skill_Exchange.Domain.Interfaces;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Skill_Exchange.Application.Services
 {
@@ -21,6 +26,7 @@ namespace Skill_Exchange.Application.Services
             _mapper = mapper;
         }
 
+        // Send a message between users
         public async Task<Result<MessageResponseDTO>> SendMessageAsync(Guid senderId, Guid receiverId, string content)
         {
             if (string.IsNullOrWhiteSpace(content))
@@ -50,6 +56,7 @@ namespace Skill_Exchange.Application.Services
             return Result<MessageResponseDTO>.Ok(dto);
         }
 
+        // Get all messages in a conversation
         public async Task<Result<IEnumerable<MessageResponseDTO>>> GetConversationMessagesAsync(Guid conversationId)
         {
             if (conversationId == Guid.Empty)
@@ -63,12 +70,29 @@ namespace Skill_Exchange.Application.Services
             return Result<IEnumerable<MessageResponseDTO>>.Ok(dtoList);
         }
 
-        public async Task<Result<IEnumerable<MessageResponseDTO>>> GetUserMessagesAsync(Guid userId)
+        // Get paginated messages for a user
+        public async Task<Result<IEnumerable<MessageResponseDTO>>> GetUserMessagesPaginatedAsync(Guid userId, PaginationDto pagination)
         {
             if (userId == Guid.Empty)
                 return Result<IEnumerable<MessageResponseDTO>>.Fail("Invalid user ID.");
 
-            var messages = await _messageRepository.GetUserMessagesAsync(userId);
+            if (pagination == null)
+                pagination = new PaginationDto();
+
+            IEnumerable<Message> messages;
+            if (pagination.ApplyPagination)
+            {
+                messages = await _messageRepository.GetUserMessagesPaginatedAsync(
+                    userId,
+                    pagination.Skip,
+                    pagination.Take
+                );
+            }
+            else
+            {
+                messages = await _messageRepository.GetUserMessagesAsync(userId);
+            }
+
             if (!messages.Any())
                 return Result<IEnumerable<MessageResponseDTO>>.Fail("No messages found for this user.");
 
@@ -76,6 +100,7 @@ namespace Skill_Exchange.Application.Services
             return Result<IEnumerable<MessageResponseDTO>>.Ok(dtoList);
         }
 
+        // Get undelivered messages
         public async Task<Result<IEnumerable<MessageResponseDTO>>> GetUndeliveredMessagesAsync(Guid userId)
         {
             if (userId == Guid.Empty)
@@ -86,6 +111,7 @@ namespace Skill_Exchange.Application.Services
             return Result<IEnumerable<MessageResponseDTO>>.Ok(dtoList);
         }
 
+        // Mark a message delivered
         public async Task MarkMessageDeliveredAsync(Guid messageId)
         {
             var message = await _messageRepository.GetByIdAsync(messageId);
@@ -96,6 +122,7 @@ namespace Skill_Exchange.Application.Services
             }
         }
 
+        // Mark a message read
         public async Task<MessageResponseDTO?> MarkMessageReadAsync(Guid messageId)
         {
             var message = await _messageRepository.GetByIdAsync(messageId);
@@ -110,7 +137,7 @@ namespace Skill_Exchange.Application.Services
             return message != null ? _mapper.Map<MessageResponseDTO>(message) : null;
         }
 
-
+        // Update a message
         public async Task<Result<bool>> UpdateMessageAsync(Guid messageId, string newContent)
         {
             if (string.IsNullOrWhiteSpace(newContent))
@@ -121,7 +148,7 @@ namespace Skill_Exchange.Application.Services
                 return Result<bool>.Fail("Message not found.");
 
             message.Content = newContent.Trim();
-            message.SentAt = DateTime.UtcNow; // optional: track edit time
+            message.SentAt = DateTime.UtcNow; // track edit time
 
             var updated = await _messageRepository.UpdateMessageAsync(message);
             return updated
@@ -129,6 +156,7 @@ namespace Skill_Exchange.Application.Services
                 : Result<bool>.Fail("Failed to update message.");
         }
 
+        // Delete a message
         public async Task<Result<bool>> DeleteMessageAsync(Guid id)
         {
             if (id == Guid.Empty)
@@ -139,5 +167,28 @@ namespace Skill_Exchange.Application.Services
                 ? Result<bool>.Ok(true)
                 : Result<bool>.Fail("Failed to delete message.");
         }
+
+        // Get conversation previews (WhatsApp style) with pagination
+        public async Task<Result<IEnumerable<ConversationPreviewDTO>>> GetConversationPreviewsAsync(Guid userId, int page, int pageSize)
+        {
+            if (userId == Guid.Empty)
+                return Result<IEnumerable<ConversationPreviewDTO>>.Fail("Invalid user ID");
+
+            var conversations = await _messageRepository.GetUserConversationDataPaginatedAsync(userId, page, pageSize);
+            if (!conversations.Any())
+                return Result<IEnumerable<ConversationPreviewDTO>>.Fail("No conversations found.");
+
+            var dtoList = conversations.Select(c => new ConversationPreviewDTO
+            {
+                ConversationId = c.ConversationId,
+                LastMessage = c.LastMessage.Content,          
+                LastMessageSentAt = c.LastMessage.SentAt,    
+                Participants = c.Participants
+            });
+
+            return Result<IEnumerable<ConversationPreviewDTO>>.Ok(dtoList);
+        }
     }
+
+    
 }
