@@ -16,6 +16,8 @@ namespace Skill_Exchange.API.Hubs
             _messageService = messageService;
         }
 
+        // ------------------ Connection Handling ------------------
+
         public override async Task OnConnectedAsync()
         {
             if (Guid.TryParse(Context.GetHttpContext()?.Request.Query["userId"], out Guid userId) && userId != Guid.Empty)
@@ -33,6 +35,8 @@ namespace Skill_Exchange.API.Hubs
                         await _messageService.MarkMessageDeliveredAsync(msg.Id);
                     }
                 }
+
+                await Clients.Caller.SendAsync("UserConnected", userId);
             }
 
             await base.OnConnectedAsync();
@@ -42,7 +46,10 @@ namespace Skill_Exchange.API.Hubs
         {
             var user = _connections.FirstOrDefault(x => x.Value == Context.ConnectionId);
             if (!user.Equals(default(KeyValuePair<Guid, string>)))
+            {
                 _connections.Remove(user.Key);
+                await Clients.All.SendAsync("UserDisconnected", user.Key);
+            }
 
             await base.OnDisconnectedAsync(exception);
         }
@@ -94,16 +101,18 @@ namespace Skill_Exchange.API.Hubs
             }
         }
 
-        // ------------------ Call Signaling ------------------
+        // ------------------ Call Signaling (Audio/Video) ------------------
 
-        public async Task CallUser(Guid callerId, Guid targetUserId, string offer)
+        // Initiates a call (audio or video)
+        public async Task CallUser(Guid callerId, Guid targetUserId, string offer, string callType = "audio")
         {
             if (_connections.TryGetValue(targetUserId, out var targetConnection))
             {
                 await Clients.Client(targetConnection).SendAsync("ReceiveCallOffer", new
                 {
                     CallerId = callerId,
-                    Offer = offer
+                    Offer = offer,
+                    CallType = callType
                 });
             }
             else
@@ -112,6 +121,7 @@ namespace Skill_Exchange.API.Hubs
             }
         }
 
+        // Answer an incoming call
         public async Task AnswerCall(Guid callerId, Guid receiverId, string answer)
         {
             if (_connections.TryGetValue(callerId, out var callerConnection))
@@ -124,6 +134,7 @@ namespace Skill_Exchange.API.Hubs
             }
         }
 
+        // Exchange ICE candidates between peers
         public async Task SendIceCandidate(Guid targetUserId, string candidate)
         {
             if (_connections.TryGetValue(targetUserId, out var targetConnection))
@@ -132,6 +143,7 @@ namespace Skill_Exchange.API.Hubs
             }
         }
 
+        // End call for both users
         public async Task EndCall(Guid userId, Guid targetUserId)
         {
             if (_connections.TryGetValue(targetUserId, out var targetConnection))
@@ -140,6 +152,15 @@ namespace Skill_Exchange.API.Hubs
             }
 
             await Clients.Caller.SendAsync("CallEnded", targetUserId);
+        }
+
+        // Notify caller if target rejects call
+        public async Task RejectCall(Guid callerId, Guid receiverId)
+        {
+            if (_connections.TryGetValue(callerId, out var callerConnection))
+            {
+                await Clients.Client(callerConnection).SendAsync("CallRejected", receiverId);
+            }
         }
     }
 }
