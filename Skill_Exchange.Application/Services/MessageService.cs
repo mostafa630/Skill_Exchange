@@ -57,7 +57,7 @@ namespace Skill_Exchange.Application.Services
         }
 
         // Get all messages in a conversation
-        public async Task<Result<IEnumerable<MessageResponseDTO>>> GetConversationMessagesAsync(Guid conversationId)
+        /*public async Task<Result<IEnumerable<MessageResponseDTO>>> GetConversationMessagesAsync(Guid conversationId)
         {
             if (conversationId == Guid.Empty)
                 return Result<IEnumerable<MessageResponseDTO>>.Fail("Invalid conversation ID.");
@@ -68,7 +68,7 @@ namespace Skill_Exchange.Application.Services
 
             var dtoList = _mapper.Map<IEnumerable<MessageResponseDTO>>(messages);
             return Result<IEnumerable<MessageResponseDTO>>.Ok(dtoList);
-        }
+        }*/
 
         // Get paginated messages for a user
         public async Task<Result<IEnumerable<MessageResponseDTO>>> GetUserMessagesPaginatedAsync(Guid userId, PaginationDto pagination)
@@ -188,7 +188,25 @@ namespace Skill_Exchange.Application.Services
 
             return Result<IEnumerable<ConversationPreviewDTO>>.Ok(dtoList);
         }
+        // Get paginated messages in a conversation (for infinite scroll)
+        public async Task<Result<IEnumerable<MessageResponseDTO>>> GetConversationMessagesPaginatedAsync(Guid conversationId, int page, int pageSize)
+        {
+            if (conversationId == Guid.Empty)
+                return Result<IEnumerable<MessageResponseDTO>>.Fail("Invalid conversation ID.");
+
+            if (page <= 0) page = 1;
+            if (pageSize <= 0) pageSize = 20;
+
+            var messages = await _messageRepository.GetConversationMessagesPaginatedAsync(conversationId, page, pageSize);
+
+            if (!messages.Any())
+                return Result<IEnumerable<MessageResponseDTO>>.Fail("No messages found for this page.");
+
+            var dtoList = _mapper.Map<IEnumerable<MessageResponseDTO>>(messages);
+            return Result<IEnumerable<MessageResponseDTO>>.Ok(dtoList);
+        }
+
     }
 
-    
+
 }

@@ -4,7 +4,8 @@ namespace Skill_Exchange.Domain.Interfaces
     public interface IMessageRepository
     {
         Task AddMessageAsync(Message message);
-        Task<IEnumerable<Message>> GetConversationMessagesAsync(Guid conversationId);
+        //Task<IEnumerable<Message>> GetConversationMessagesAsync(Guid conversationId);
+        Task<IEnumerable<Message>> GetConversationMessagesPaginatedAsync(Guid conversationId, int page, int pageSize);
         Task<IEnumerable<Message>> GetUserMessagesAsync(Guid userId);
         Task<Message?> GetByIdAsync(Guid id);
         Task<bool> UpdateMessageAsync(Message message);

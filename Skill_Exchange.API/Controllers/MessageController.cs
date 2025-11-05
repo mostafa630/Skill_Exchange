@@ -17,13 +17,7 @@ namespace Skill_Exchange.API.Controllers
             _messageService = messageService;
         }
 
-        // DTO for updating a message
-        public class UpdateMessageDTO
-        {
-            public string Content { get; set; } = string.Empty;
-        }
-
-        // Send a new message
+        //  Send a new message
         [HttpPost("send")]
         public async Task<IActionResult> SendMessage([FromBody] CreateMessageDTO request)
         {
@@ -31,24 +25,27 @@ namespace Skill_Exchange.API.Controllers
                 request.SenderId, request.ReceiverId, request.Content);
 
             if (!result.Success)
-                return BadRequest(result.Error);
+                return BadRequest(new { error = result.Error });
 
             return Ok(result.Data);
         }
 
-        // Get messages in a conversation
+        //  Get paginated messages in a conversation (for infinite scroll)
         [HttpGet("conversation/{conversationId}")]
-        public async Task<IActionResult> GetConversationMessages(Guid conversationId)
+        public async Task<IActionResult> GetConversationMessages(
+            Guid conversationId,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20)
         {
-            var result = await _messageService.GetConversationMessagesAsync(conversationId);
+            var result = await _messageService.GetConversationMessagesPaginatedAsync(conversationId, page, pageSize);
 
             if (!result.Success)
-                return NotFound(result.Error);
+                return NotFound(new { error = result.Error });
 
             return Ok(result.Data);
         }
 
-        // Get paginated messages for a user
+        //  Get paginated messages for a user (all conversations)
         [HttpGet("user/{userId}")]
         public async Task<IActionResult> GetUserMessages(
             Guid userId,
@@ -65,36 +62,36 @@ namespace Skill_Exchange.API.Controllers
             var result = await _messageService.GetUserMessagesPaginatedAsync(userId, pagination);
 
             if (!result.Success)
-                return NotFound(result.Error);
+                return NotFound(new { error = result.Error });
 
             return Ok(result.Data);
         }
 
-        // Update a message
+        //  Update a message
         [HttpPut("{messageId}")]
-        public async Task<IActionResult> UpdateMessage(Guid messageId, [FromBody] UpdateMessageDTO request)
+        public async Task<IActionResult> UpdateMessage(Guid messageId, [FromBody] string Content)
         {
-            var result = await _messageService.UpdateMessageAsync(messageId, request.Content);
+            var result = await _messageService.UpdateMessageAsync(messageId, Content);
 
             if (!result.Success)
-                return BadRequest(result.Error);
+                return BadRequest(new { error = result.Error });
 
             return Ok(new { message = "Message updated successfully." });
         }
 
-        // Delete a message
+        //  Delete a message
         [HttpDelete("{messageId}")]
         public async Task<IActionResult> DeleteMessage(Guid messageId)
         {
             var result = await _messageService.DeleteMessageAsync(messageId);
 
             if (!result.Success)
-                return NotFound(result.Error);
+                return NotFound(new { error = result.Error });
 
             return Ok(new { message = "Message deleted successfully." });
         }
 
-        // Get conversation previews for a user (WhatsApp style)
+        //  Get conversation previews (WhatsApp-style)
         [HttpGet("previews/{userId}")]
         public async Task<IActionResult> GetConversationPreviews(
             Guid userId,
@@ -104,9 +101,10 @@ namespace Skill_Exchange.API.Controllers
             var result = await _messageService.GetConversationPreviewsAsync(userId, page, pageSize);
 
             if (!result.Success)
-                return NotFound(result.Error);
+                return NotFound(new { error = result.Error });
 
             return Ok(result.Data);
         }
+
     }
 }

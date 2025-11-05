@@ -21,7 +21,7 @@ namespace Skill_Exchange.Infrastructure.Repositories
         }
 
         // Get all messages in a conversation (latest first)
-        public async Task<IEnumerable<Message>> GetConversationMessagesAsync(Guid conversationId)
+        /*public async Task<IEnumerable<Message>> GetConversationMessagesAsync(Guid conversationId)
         {
             if (conversationId == Guid.Empty) return Enumerable.Empty<Message>();
 
@@ -29,7 +29,7 @@ namespace Skill_Exchange.Infrastructure.Repositories
             return await _messages.Find(filter)
                                   .SortByDescending(m => m.SentAt)
                                   .ToListAsync();
-        }
+        }*/
 
         // Get all messages for a user (latest first)
         public async Task<IEnumerable<Message>> GetUserMessagesAsync(Guid userId)
@@ -142,5 +142,21 @@ namespace Skill_Exchange.Infrastructure.Repositories
             var result = await aggregation.ToListAsync();
             return result.Select(a => (a.ConversationId, a.LastMessage, a.Participants));
         }
+        // Get paginated messages within a conversation (latest first)
+        public async Task<IEnumerable<Message>> GetConversationMessagesPaginatedAsync(Guid conversationId, int page, int pageSize)
+        {
+            if (conversationId == Guid.Empty) return Enumerable.Empty<Message>();
+            if (page <= 0) page = 1;
+            if (pageSize <= 0) pageSize = 20;
+
+            var filter = Builders<Message>.Filter.Eq(m => m.ConversationId, conversationId);
+
+            return await _messages.Find(filter)
+                                  .SortByDescending(m => m.SentAt)
+                                  .Skip((page - 1) * pageSize)
+                                  .Limit(pageSize)
+                                  .ToListAsync();
+        }
+
     }
 }
