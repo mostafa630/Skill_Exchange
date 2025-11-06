@@ -16,6 +16,7 @@ using Skill_Exchange.Infrastructure.AuthenticationServices;
 using Skill_Exchange.Infrastructure.Configurations;
 using Skill_Exchange.Infrastructure.Peresistence;
 using Skill_Exchange.Infrastructure.Repositories;
+using System.Reflection;
 using System.Text.Json.Serialization;
 
 
@@ -27,7 +28,13 @@ builder.Services.AddControllers();
 
 // ---------------------- Swagger ----------------------
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    //  Include XML documentation
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    options.IncludeXmlComments(xmlPath, includeControllerXmlComments: true);
+});
 
 //----------------------- JWT Authentication -----------
 var JwtOptions = builder.Configuration.GetSection("JWT").Get<JwtOptions>();

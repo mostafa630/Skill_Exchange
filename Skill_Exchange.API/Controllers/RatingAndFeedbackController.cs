@@ -21,7 +21,9 @@ namespace Skill_Exchange.API.Controllers
             _mediator = mediator;
         }
 
-        // Get all ratings (admin)
+        /// <summary>
+        /// for testing (to see that the last feedback added)
+        /// </summary>
         [HttpGet("all")]
         public async Task<IActionResult> GetAllRatings()
         {

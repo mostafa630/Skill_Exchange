@@ -17,7 +17,9 @@ namespace Skill_Exchange.API.Controllers
             _messageService = messageService;
         }
 
-        //  Send a new message
+        /// <summary>
+        /// for testing (test adding messages in db)
+        /// </summary>
         [HttpPost("send")]
         public async Task<IActionResult> SendMessage([FromBody] CreateMessageDTO request)
         {
@@ -45,7 +47,9 @@ namespace Skill_Exchange.API.Controllers
             return Ok(result.Data);
         }
 
-        //  Get paginated messages for a user (all conversations)
+        /// <summary>
+        /// for testing (to see that the last messages added)
+        /// </summary>
         [HttpGet("user/{userId}")]
         public async Task<IActionResult> GetUserMessages(
             Guid userId,
@@ -90,7 +94,9 @@ namespace Skill_Exchange.API.Controllers
 
             return Ok(new { message = "Message deleted successfully." });
         }
-
+        /// <summary>
+        /// hasn't been completed yes
+        /// </summary>
         //  Get conversation previews (WhatsApp-style)
         [HttpGet("previews/{userId}")]
         public async Task<IActionResult> GetConversationPreviews(
