@@ -1,6 +1,8 @@
-﻿namespace Skill_Exchange.API.Hubs
+﻿using Microsoft.AspNetCore.SignalR;
+
+namespace Skill_Exchange.API.Hubs
 {
-    public class NotificationHub
+    public class NotificationHub:Hub
     {
     }
 }
