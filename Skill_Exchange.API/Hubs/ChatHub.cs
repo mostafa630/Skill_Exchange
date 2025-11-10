@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.Identity.Client;
 using Skill_Exchange.Application.DTOs;
 using Skill_Exchange.Application.DTOs.Message;
 using Skill_Exchange.Application.Services;
-using Skill_Exchange.Domain.Entities;
+using Twilio;
+using Twilio.Rest.Api.V2010.Account;
 
 namespace Skill_Exchange.API.Hubs
 {
@@ -11,11 +13,53 @@ namespace Skill_Exchange.API.Hubs
         private readonly MessageService _messageService;
         private static readonly Dictionary<Guid, string> _connections = new();
 
-        public ChatHub(MessageService messageService)
+        // 1. New Private Fields to hold the secure credentials
+        private readonly string _twilioAccountSid;
+        private readonly string _twilioAuthToken;
+
+        // 2. Inject IConfiguration and read secrets
+        public ChatHub(MessageService messageService, IConfiguration configuration) 
         {
             _messageService = messageService;
+
+            // Read secrets securely from configuration (User Secrets / Environment Variables)
+            _twilioAccountSid = configuration["Twilio:AccountSid"]
+                ?? throw new InvalidOperationException("Twilio:AccountSid not found. Check User Secrets or Environment Variables.");
+
+            _twilioAuthToken = configuration["Twilio:AuthToken"]
+                ?? throw new InvalidOperationException("Twilio:AuthToken not found. Check User Secrets or Environment Variables.");
         }
 
+        // ------------------ WebRTC: Secure TURN Token Retrieval ------------------
+
+        public async Task<object?> GetTwilioIceServers()
+        {
+            try
+            {
+                // Initialize Twilio client using the injected, secure fields
+                TwilioClient.Init(_twilioAccountSid, _twilioAuthToken);
+
+                // Request a new ephemeral (temporary) token from Twilio
+                // This call works because TwilioClient is initialized correctly.
+                var tokenResource = await TokenResource.CreateAsync();
+
+                // The returned object contains the fresh, non-expired ICE servers list.
+                return new
+                {
+                    ice_servers = tokenResource.IceServers,
+                    ttl = tokenResource.Ttl,
+                    username = tokenResource.Username,
+                    credential = tokenResource.Password // SDK maps credential to Password property
+                };
+            }
+            catch (Exception ex)
+            {
+                // Catch all exceptions and return null/failure gracefully.
+                Console.WriteLine($"Twilio Token Error: {ex.Message}");
+                // In a production app, you might want to return an empty list or a generic error object.
+                return null;
+            }
+        }
         // ------------------ Connection Handling ------------------
 
         public override async Task OnConnectedAsync()

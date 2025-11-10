@@ -20,7 +20,6 @@ using System.Reflection;
 using System.Text.Json.Serialization;
 
 
-
 var builder = WebApplication.CreateBuilder(args);
 
 // ---------------------- Controllers ----------------------
@@ -140,10 +139,11 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 
 app.UseStaticFiles();
 app.UseHttpsRedirection();
+app.UseRouting();
+app.UseWebSockets();
 app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.MapHub<ChatHub>("/chatHub");
-app.UseWebSockets();
 app.Run();
