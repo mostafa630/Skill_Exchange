@@ -1,15 +1,11 @@
 ﻿using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Configuration; 
+using Microsoft.Extensions.Configuration;
 using Skill_Exchange.Application.DTOs;
 using Skill_Exchange.Application.DTOs.Message;
 using Skill_Exchange.Application.Services;
-using Twilio;
-using Twilio.Rest.Api.V2010.Account;
+using Twilio; 
+using Twilio.Rest.Api.V2010.Account; 
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Skill_Exchange.API.Hubs
 {
@@ -21,36 +17,43 @@ namespace Skill_Exchange.API.Hubs
         // 1. Private Fields to hold the securely loaded Twilio credentials
         private readonly string _twilioAccountSid;
         private readonly string _twilioAuthToken;
+        private readonly string _twilioApiKeySid; 
+        private readonly string _twilioApiKeySecret; 
 
         // 2. Inject IConfiguration and read secrets
         public ChatHub(MessageService messageService, IConfiguration configuration)
         {
             _messageService = messageService;
 
-            // Read secrets securely from configuration
+            // Read primary Twilio credentials
             _twilioAccountSid = configuration["Twilio:AccountSid"]
                 ?? throw new InvalidOperationException("Twilio:AccountSid not found. Check configuration.");
 
             _twilioAuthToken = configuration["Twilio:AuthToken"]
                 ?? throw new InvalidOperationException("Twilio:AuthToken not found. Check configuration.");
+
+            _twilioApiKeySid = configuration["Twilio:ApiKeySid"]
+                ?? throw new InvalidOperationException("Twilio:ApiKeySid not found. Check configuration.");
+
+            _twilioApiKeySecret = configuration["Twilio:ApiKeySecret"]
+                ?? throw new InvalidOperationException("Twilio:ApiKeySecret not found. Check configuration.");
         }
 
         // ------------------ WebRTC: Secure TURN Token Retrieval ------------------
 
-        public async Task<object?> GetTwilioIceServers()
+        public async Task<object?> GetTwilioIceServers(Guid userId)
         {
             try
             {
-                // Initialize Twilio client using the injected, secure fields
+                // Initialize Twilio client using the injected, secure AccountSid and AuthToken
                 TwilioClient.Init(_twilioAccountSid, _twilioAuthToken);
 
                 // Request a new ephemeral (temporary) token from Twilio
                 var tokenResource = await TokenResource.CreateAsync();
 
-                // The returned object contains the fresh, non-expired ICE servers list.
+                // Return the structured object containing the fresh ICE servers list.
                 return new
                 {
-                    // The property name "ice_servers" must match what the JavaScript client expects.
                     ice_servers = tokenResource.IceServers,
                     ttl = tokenResource.Ttl,
                     username = tokenResource.Username,
@@ -60,7 +63,6 @@ namespace Skill_Exchange.API.Hubs
             catch (Exception ex)
             {
                 Console.WriteLine($"Twilio Token Error: {ex.Message}");
-                // Return null so the frontend client knows the token retrieval failed.
                 return null;
             }
         }
@@ -81,7 +83,7 @@ namespace Skill_Exchange.API.Hubs
                     {
                         await Clients.Caller.SendAsync("ReceiveMessage", msg);
                         msg.DeliveredAt = DateTime.UtcNow;
-                        await _messageService.MarkMessageDeliveredAsync(msg.Id);
+                        await _messageService.MarkMessageDeliveredAsync(msg.Id); 
                     }
                 }
 
