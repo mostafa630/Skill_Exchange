@@ -26,7 +26,8 @@ namespace Skill_Exchange.Application.Specifications
 
         private static UserSpecification filter_process(UserSpecification userSpec, UserFilterDTO filter)
         {
-            userSpec.And(u => u.Id != filter.UserId); // exclude my self
+            if (filter.UserId != Guid.Empty)
+                userSpec.And(u => u.Id != filter.UserId); // exclude my self
 
             if (!string.IsNullOrWhiteSpace(filter.FirstName))
                 userSpec.And(u => u.FirstName.Contains(filter.FirstName));

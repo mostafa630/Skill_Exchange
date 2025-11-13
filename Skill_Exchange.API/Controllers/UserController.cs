@@ -59,7 +59,18 @@ namespace Skill_Exchange.API.Controllers
         [HttpGet("all/{userId:Guid}")]
         public async Task<ActionResult<IEnumerable<UserDTO>>> GetAll([FromRoute] Guid userId, [FromQuery] UserFilterDTO userFilterDTO, [FromQuery] UserIncludesDTO userIncludesDTO, [FromQuery] PaginationDto paginationDto)
         {
-            userFilterDTO.UserId = userId;
+            userFilterDTO.UserId = userId;  // to exclude the user it self 
+            var userSpec = UserSpecification.Build(userFilterDTO, userIncludesDTO, paginationDto);
+            var query = new GetAll<AppUser, UserDTO>(userSpec);
+            var response = await _mediator.Send(query);
+
+            return response.Success ? Ok(response.Data) : BadRequest(response.Error);
+        }
+        [HttpGet("all")]
+        // admins
+        public async Task<ActionResult<IEnumerable<UserDTO>>> GetAll([FromQuery] UserFilterDTO userFilterDTO, [FromQuery] UserIncludesDTO userIncludesDTO, [FromQuery] PaginationDto paginationDto)
+        {
+            userFilterDTO.UserId = Guid.Empty; // means all users not exclude any user (for admin purposes)
             var userSpec = UserSpecification.Build(userFilterDTO, userIncludesDTO, paginationDto);
             var query = new GetAll<AppUser, UserDTO>(userSpec);
             var response = await _mediator.Send(query);

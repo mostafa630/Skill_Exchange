@@ -7,8 +7,6 @@
     <UserSecretsId>48d91c79-6c2e-4257-b077-5bb279e75075</UserSecretsId>
 	  <GenerateDocumentationFile>true</GenerateDocumentationFile>
 	  <NoWarn>$(NoWarn);1591</NoWarn>
-	  <UserSecretsId>fc6f80a4-66cb-465f-8e68-11a6bc7f32c5</UserSecretsId>
-	  <UserSecretsId>8dd05071-125e-4429-b6ff-f09f3003b3e1</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
