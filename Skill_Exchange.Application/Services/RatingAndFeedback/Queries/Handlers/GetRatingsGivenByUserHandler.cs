@@ -28,8 +28,11 @@ namespace Skill_Exchange.Application.Services.RatingAndFeedback.Queries.Handlers
                 .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync(cancellationToken);
 
+            // If user gave no ratings → return empty list
             if (!ratings.Any())
-                return Result<List<RatingGivenByUserDto>>.Fail("No ratings found from this user.");
+            {
+                return Result<List<RatingGivenByUserDto>>.Ok(new List<RatingGivenByUserDto>());
+            }
 
             var mapped = _mapper.Map<List<RatingGivenByUserDto>>(ratings);
 
@@ -40,5 +43,6 @@ namespace Skill_Exchange.Application.Services.RatingAndFeedback.Queries.Handlers
 
             return Result<List<RatingGivenByUserDto>>.Ok(mapped);
         }
+
     }
 }

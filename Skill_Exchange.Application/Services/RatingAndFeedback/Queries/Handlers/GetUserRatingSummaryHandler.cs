@@ -29,22 +29,33 @@ namespace Skill_Exchange.Application.Services.RatingAndFeedback.Handlers
                 .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync(cancellationToken);
 
+            // If user has NO ratings → return an EMPTY summary (Success = true)
             if (!ratings.Any())
-                return Result<UserRatingSummaryDto>.Fail("No ratings found for this user.");
+            {
+                var emptySummary = new UserRatingSummaryDto
+                {
+                    UserId = request.UserId,
+                    AverageScore = 0,
+                    TotalRatings = 0,
+                    Feedbacks = new List<UserFeedbackDto>()
+                };
 
-            // ✅ Use AutoMapper to map the entity list to feedback DTOs
+                return Result<UserRatingSummaryDto>.Ok(emptySummary);
+            }
+
+            // Normal case: user has ratings
             var feedbacks = _mapper.Map<List<UserFeedbackDto>>(ratings);
-
-            // ✅ Use AutoMapper to map the entity list to summary DTO
             var summary = _mapper.Map<UserRatingSummaryDto>(ratings);
 
-            // ✅ Fill the computed values (AverageScore, TotalRatings)
             summary.UserId = request.UserId;
             summary.Feedbacks = feedbacks;
             summary.TotalRatings = ratings.Count;
-            summary.AverageScore = Math.Round(ratings.Where(r => r.Score.HasValue).Average(r => r.Score!.Value), 2);
+            summary.AverageScore = Math.Round(
+                ratings.Where(r => r.Score.HasValue).Average(r => r.Score!.Value), 2
+            );
 
             return Result<UserRatingSummaryDto>.Ok(summary);
         }
+
     }
 }
