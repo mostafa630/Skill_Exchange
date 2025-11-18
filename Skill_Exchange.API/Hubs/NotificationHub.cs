@@ -26,7 +26,7 @@ namespace Skill_Exchange.API.Hubs
             {
                 _connections[userId] = Context.ConnectionId;
 
-                // Load existing notifications for the user
+                // Load existing notifications for the user from DB
                 var allNotifications = await _unitOfWork.Notifications.GetAllAsync();
                 var userNotifications = allNotifications
                     .Where(n => n.Users != null && n.Users.Any(u => u.Id == userId))
@@ -63,36 +63,100 @@ namespace Skill_Exchange.API.Hubs
             await base.OnDisconnectedAsync(exception);
         }
 
-        // ------------------- Send Notification to One User -------------------
-        public async Task SendToUser(Guid userId, NotificationDto dto)
+        // ------------------- Send Existing Notification to One User -------------------
+        public async Task SendExistingNotification(Guid notificationId, Guid userId)
         {
-            // 1️ Fetch user
+            var notification = await _unitOfWork.Notifications.GetByIdAsync(notificationId);
+            if (notification == null) return;
+
             var user = await _unitOfWork.Users.GetByIdAsync(userId);
             if (user == null) return;
 
-            // 2️ Add notification via MediatR
+            // Link user via the many-to-many automatically created by EF Core
+            if (!notification.Users.Any(u => u.Id == user.Id))
+            {
+                notification.Users.Add(user);
+                await _unitOfWork.CompleteAsync(); // persist link in join table
+            }
+
+            // Deliver in real-time if online
+            if (_connections.TryGetValue(user.Id, out var connId))
+            {
+                await Clients.Client(connId).SendAsync("ReceiveNotification", new NotificationDto
+                {
+                    Id = notification.Id,
+                    Title = notification.Title,
+                    Message = notification.Message,
+                    CreatedAt = notification.CreatedAt,
+                    RefrenceId = notification.RefrenceId
+                });
+            }
+        }
+
+        // ------------------- Send Existing Notification to Multiple Users -------------------
+        public async Task SendExistingNotificationToUsers(Guid notificationId, List<Guid> userIds)
+        {
+            var notification = await _unitOfWork.Notifications.GetByIdAsync(notificationId);
+            if (notification == null) return;
+
+            var users = new List<AppUser>();
+            foreach (var userId in userIds)
+            {
+                var user = await _unitOfWork.Users.GetByIdAsync(userId);
+                if (user != null) users.Add(user);
+            }
+
+            if (!users.Any()) return;
+
+            bool updated = false;
+            foreach (var user in users)
+            {
+                if (!notification.Users.Any(u => u.Id == user.Id))
+                {
+                    notification.Users.Add(user); // EF Core handles join table
+                    updated = true;
+                }
+            }
+
+            if (updated)
+                await _unitOfWork.CompleteAsync();
+
+            // Deliver to online users
+            foreach (var user in users)
+            {
+                if (_connections.TryGetValue(user.Id, out var connId))
+                {
+                    await Clients.Client(connId).SendAsync("ReceiveNotification", new NotificationDto
+                    {
+                        Id = notification.Id,
+                        Title = notification.Title,
+                        Message = notification.Message,
+                        CreatedAt = notification.CreatedAt,
+                        RefrenceId = notification.RefrenceId
+                    });
+                }
+            }
+        }
+
+        // ------------------- Send New Notification to One User -------------------
+        public async Task SendNewNotification(Guid userId, NotificationDto dto)
+        {
             var result = await _mediator.Send(new AddNotification(userId, dto.Title, dto.Message, dto.RefrenceId));
             if (!result.Success) return;
 
-            // 3️ Deliver to online user
+            // Deliver real-time if online
             if (_connections.TryGetValue(userId, out var connId))
             {
                 await Clients.Client(connId).SendAsync("ReceiveNotification", dto);
             }
         }
 
-        // ------------------- Send Notification to Multiple Users -------------------
-        public async Task SendToUsers(List<Guid> userIds, NotificationDto dto)
+        // ------------------- Send Notification Based on Condition -------------------
+        public async Task SendNotificationToUsersWhere(Func<AppUser, bool> condition, NotificationDto dto)
         {
-            // Fetch all target users at once
-            var users = new List<AppUser>();
-            foreach (var userId in userIds)
-            {
-                var u = await _unitOfWork.Users.GetByIdAsync(userId);
-                if (u != null) users.Add(u);
-            }
+            var allUsers = await _unitOfWork.Users.GetAllAsync();
+            var users = allUsers.Where(condition).ToList();
 
-            // 1️ Create a single Notification and assign all target users
             if (!users.Any()) return;
 
             var notification = new Notification
@@ -102,43 +166,13 @@ namespace Skill_Exchange.API.Hubs
                 Message = dto.Message,
                 CreatedAt = DateTime.UtcNow,
                 RefrenceId = dto.RefrenceId,
-                Users = users 
+                Users = users // EF Core will create UserNotification links
             };
 
             await _unitOfWork.Notifications.AddAsync(notification);
             await _unitOfWork.CompleteAsync();
 
-            // 2️ Deliver to online users
             foreach (var user in users)
-            {
-                if (_connections.TryGetValue(user.Id, out var connId))
-                {
-                    await Clients.Client(connId).SendAsync("ReceiveNotification", dto);
-                }
-            }
-        }
-
-        // ------------------- Broadcast to All Users -------------------
-        public async Task Broadcast(NotificationDto dto)
-        {
-            var allUsers = (await _unitOfWork.Users.GetAllAsync()).ToList();
-            if (!allUsers.Any()) return;
-
-            var notification = new Notification
-            {
-                Id = Guid.NewGuid(),
-                Title = dto.Title,
-                Message = dto.Message,
-                CreatedAt = DateTime.UtcNow,
-                RefrenceId = dto.RefrenceId,
-                Users = allUsers
-            };
-
-            await _unitOfWork.Notifications.AddAsync(notification);
-            await _unitOfWork.CompleteAsync();
-
-            // Deliver to online clients
-            foreach (var user in allUsers)
             {
                 if (_connections.TryGetValue(user.Id, out var connId))
                 {
