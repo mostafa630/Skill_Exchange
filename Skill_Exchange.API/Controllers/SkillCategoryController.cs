@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Skill_Exchange.Application.DTOs.Skill_Category;
 using Skill_Exchange.Application.Services.GlobalCommands;
@@ -43,6 +44,7 @@ namespace Skill_Exchange.API.Controllers
 
         // Add a new category
         [HttpPost("add")]
+        [Authorize]
         public async Task<IActionResult> Add([FromBody] SkillCategoryDTO dto)
         {
             if (!ModelState.IsValid)
@@ -54,6 +56,7 @@ namespace Skill_Exchange.API.Controllers
 
         // Update an existing category
         [HttpPut("update")]
+        [Authorize]
         public async Task<IActionResult> Update([FromBody] SkillCategoryDTO dto)
         {
             if (dto == null || dto.Id == Guid.Empty)
@@ -68,6 +71,7 @@ namespace Skill_Exchange.API.Controllers
 
         // Delete a category by ID
         [HttpDelete("delete/{id:guid}")]
+        [Authorize]
         public async Task<IActionResult> Delete(Guid id)
         {
             var result = await _mediator.Send(new Delete<SkillCategory>(id));

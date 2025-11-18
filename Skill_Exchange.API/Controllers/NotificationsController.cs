@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Skill_Exchange.Application.DTOs.Notifications;
 using Skill_Exchange.Application.Services.GlobalCommands;
@@ -11,6 +12,7 @@ namespace Skill_Exchange.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class NotificationsController : ControllerBase
     {
         private readonly IMediator _mediator;

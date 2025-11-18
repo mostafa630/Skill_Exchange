@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Skill_Exchange.Application.DTOs;
 using Skill_Exchange.Application.DTOs.Skill;
@@ -8,14 +9,12 @@ using Skill_Exchange.Application.Services.GlobalQuery;
 using Skill_Exchange.Application.Services.Skill.Commands;
 using Skill_Exchange.Application.Specifications;
 using Skill_Exchange.Domain.Entities;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Skill_Exchange.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class SkillController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -27,6 +26,7 @@ namespace Skill_Exchange.API.Controllers
 
         // Add a new skill
         [HttpPost("add")]
+
         public async Task<IActionResult> AddSkill([FromBody] CreateSkillDto dto)
         {
             // Check if skill with same name already exists
@@ -55,6 +55,7 @@ namespace Skill_Exchange.API.Controllers
 
         // Get all skills
         [HttpGet("all")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetAllSkills([FromQuery] PaginationDto paginationDto)
         {
             var skillSpec = SkillSpecification.Build(paginationDto);
@@ -67,6 +68,7 @@ namespace Skill_Exchange.API.Controllers
 
         // Get skill by ID
         [HttpGet("{id:guid}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetSkillById(Guid id)
         {
             var result = await _mediator.Send(new GetById<Skill, SkillResponseDto>(id));

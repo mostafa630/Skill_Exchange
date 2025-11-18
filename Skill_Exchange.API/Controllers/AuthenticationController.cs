@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Skill_Exchange.Application.DTOs.Auth;
 using Skill_Exchange.Application.DTOs.User;
@@ -114,6 +115,7 @@ namespace Skill_Exchange.API.Controllers
         }
 
         // Change Password
+        [Authorize]
         [HttpPost("change_password")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequestDto request)
         {
@@ -124,6 +126,7 @@ namespace Skill_Exchange.API.Controllers
         }
 
         // Refresh Token
+        [Authorize]
         [HttpPost("refresh_token")]
         public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequestDto request)
         {

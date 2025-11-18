@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Skill_Exchange.Application.DTOs.Request;
 using Skill_Exchange.Application.Services.GlobalCommands;
@@ -11,6 +12,7 @@ namespace Skill_Exchange.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class RequestController : Controller
     {
         private readonly IMediator _mediator;

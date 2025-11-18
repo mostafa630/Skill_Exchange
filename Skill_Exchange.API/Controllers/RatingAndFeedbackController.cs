@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Skill_Exchange.Application.DTOs.RatingAndFeedback;
 using Skill_Exchange.Application.Services.GlobalCommands;
@@ -12,6 +13,7 @@ namespace Skill_Exchange.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class RatingAndFeedbackController : ControllerBase
     {
         private readonly IMediator _mediator;

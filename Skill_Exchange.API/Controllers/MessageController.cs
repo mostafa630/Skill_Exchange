@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Skill_Exchange.Application.DTOs;
 using Skill_Exchange.Application.DTOs.Conversation;
 using Skill_Exchange.Application.DTOs.Message;
@@ -7,6 +8,7 @@ using Skill_Exchange.Application.Services;
 namespace Skill_Exchange.API.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/[controller]")]
     public class MessageController : ControllerBase
     {
@@ -35,9 +37,9 @@ namespace Skill_Exchange.API.Controllers
         //  Get paginated messages in a conversation (for infinite scroll)
         [HttpGet("conversation/{conversationId}")]
         public async Task<IActionResult> GetConversationMessages(
-            Guid conversationId,
-            [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 20)
+        Guid conversationId,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
         {
             var result = await _messageService.GetConversationMessagesPaginatedAsync(conversationId, page, pageSize);
 
@@ -52,9 +54,9 @@ namespace Skill_Exchange.API.Controllers
         /// </summary>
         [HttpGet("user/{userId}")]
         public async Task<IActionResult> GetUserMessages(
-            Guid userId,
-            [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 20)
+    Guid userId,
+    [FromQuery] int page = 1,
+    [FromQuery] int pageSize = 20)
         {
             var pagination = new PaginationDto
             {

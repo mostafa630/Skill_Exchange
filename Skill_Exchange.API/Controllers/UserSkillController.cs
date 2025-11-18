@@ -1,17 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using Org.BouncyCastle.Crypto;
 using Skill_Exchange.Application.DTOs.User;
 using Skill_Exchange.Application.DTOs.UserSkill;
 using Skill_Exchange.Application.Services.GlobalCommands;
 using Skill_Exchange.Application.Services.GlobalQuery;
-using Skill_Exchange.Application.Services.User.Commands;
 using Skill_Exchange.Application.Services.UserSkill.Commands;
 using Skill_Exchange.Application.Services.UserSkill.Queries;
 using Skill_Exchange.Domain.Entities;
@@ -20,6 +13,7 @@ namespace Skill_Exchange.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class UserSkillController : Controller
     {
         public IMediator _mediator;

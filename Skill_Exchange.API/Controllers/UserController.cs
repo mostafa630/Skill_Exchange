@@ -1,5 +1,6 @@
 using Azure;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Org.BouncyCastle.Crypto.Prng.Drbg;
 using Skill_Exchange.Application.DTOs;
@@ -17,6 +18,7 @@ namespace Skill_Exchange.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class UserController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -41,7 +43,7 @@ namespace Skill_Exchange.API.Controllers
 
             return response.Success ? Ok(response.Data) : BadRequest(response.Error);
         }
-
+        [Authorize]
         [HttpGet("by_Id/{Id}")]
         public async Task<ActionResult<UserDTO>> GetById(string Id)
         {

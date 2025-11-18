@@ -1,8 +1,11 @@
 ﻿using FluentValidation;
 using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using MongoDB.Driver;
 using Skill_Exchange.API;
 using Skill_Exchange.API.Hubs;
 using Skill_Exchange.Application.FluentValidation.Auth;
@@ -17,6 +20,7 @@ using Skill_Exchange.Infrastructure.Configurations;
 using Skill_Exchange.Infrastructure.Peresistence;
 using Skill_Exchange.Infrastructure.Repositories;
 using System.Reflection;
+using System.Text;
 using System.Text.Json.Serialization;
 
 
@@ -98,6 +102,26 @@ builder.Services.AddSignalR();
 builder.Services.AddScoped<MessageService>();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = JwtOptions.Issuer,
+        ValidAudience = JwtOptions.Audience,
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(JwtOptions.SigningKey))
+    };
+});
+
 // ==================== Add CORS ====================
 builder.Services.AddCors(options =>
 {
@@ -147,3 +171,5 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapHub<ChatHub>("/chatHub");
 app.Run();
+
+
